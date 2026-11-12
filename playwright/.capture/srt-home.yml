@@ -1,0 +1,105 @@
+- generic [active]:
+  - generic [ref=f25e2]:
+    - generic [ref=f25e3]:
+      - link "Skip to Navigation" [ref=f25e4] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - link "Skip to Main Content" [ref=f25e5] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - generic [ref=f25e8]:
+        - generic [ref=f25e9]: "Sandbox: CMCSMCQA |"
+        - link "Log out" [ref=f25e10] [cursor=pointer]:
+          - /url: /secur/logout.jsp
+      - generic [ref=f25e11]:
+        - button "Search" [ref=f25e18]: Search...
+        - navigation "Global Header" [ref=f25e23]:
+          - list [ref=f25e25]:
+            - listitem [ref=f25e26]:
+              - group [ref=f25e27]:
+                - button "This item doesn't support favorites" [ref=f25e29] [cursor=pointer]:
+                  - generic [ref=f25e30]:
+                    - tooltip "This item doesn't support favorites"
+                - button [ref=f25e38] [cursor=pointer]:
+                  - generic [ref=f25e39]:
+                    - tooltip "Favorites list"
+            - listitem [ref=f25e46]:
+              - button [ref=f25e52] [cursor=pointer]:
+                - generic [ref=f25e53]:
+                  - tooltip "Global Actions"
+            - listitem [ref=f25e60]:
+              - button [ref=f25e63] [cursor=pointer]:
+                - generic [ref=f25e64]:
+                  - tooltip "Salesforce Help"
+            - listitem
+            - listitem [ref=f25e71]:
+              - button [ref=f25e74] [cursor=pointer]:
+                - generic [ref=f25e75]:
+                  - tooltip "Notifications"
+            - listitem [ref=f25e84]:
+              - button "View profile" [ref=f25e87] [cursor=pointer]:
+                - generic [ref=f25e88]:
+                  - tooltip "View profile"
+    - generic [ref=f25e92]:
+      - generic [ref=f25e95]:
+        - generic [ref=f25e97]:
+          - navigation "App" [ref=f25e98]:
+            - button "App Launcher" [ref=f25e100] [cursor=pointer]
+          - heading "MACTrack" [level=1] [ref=f25e112]
+        - navigation "Global" [ref=f25e116]:
+          - list [ref=f25e117]:
+            - listitem [ref=f25e118] [cursor=pointer]:
+              - link "Home" [ref=f25e119]:
+                - /url: /lightning/page/home
+      - main [ref=f25e122]:
+        - generic [ref=f25e130]:
+          - generic [ref=f25e147]:
+            - paragraph
+            - heading [level=2] [ref=f25e148]:
+              - strong [ref=f25e149]: Welcome to the MACTrack Salesforce Application Space
+            - paragraph [ref=f25e150]: The mission of these applications is to create an innovative and efficient work management system that leverages Salesforce to automate and streamline workflows, enabling seamless collaboration, improved accuracy, and faster turnaround times. By utilizing Salesforce’s robust automation tools, we aim to reduce manual processes, enhance transparency, and empower our team to focus on delivering exceptional service and driving organizational success.
+            - paragraph [ref=f25e151]: To access a Tracker application, select the appropriate tile below.If you do not see any tiles displayed, please contact the MACTRACK Help Desk to confirm your access authorization by clicking on the link in Help Center.
+          - generic [ref=f25e153]:
+            - generic [ref=f25e154]:
+              - article [ref=f25e158]:
+                - heading "App Launcher" [level=2] [ref=f25e169]
+                - paragraph [ref=f25e175]: No apps found
+              - generic [ref=f25e191]:
+                - paragraph
+                - heading [level=2] [ref=f25e192]:
+                  - strong [ref=f25e193]: General Announcements
+                - paragraph [ref=f25e194]:
+                  - strong [ref=f25e195]: General announcements regarding upgrades to all Salesforce applications will be displayed in this section.
+                - paragraph [ref=f25e196]:
+                  - strong [ref=f25e197]: Tracker-specific deployment updates will appear on the specific Trackers Home page in the upper right corner.
+              - generic [ref=f25e214]:
+                - paragraph
+                - heading [level=2] [ref=f25e215]:
+                  - strong [ref=f25e216]: Frequently Asked Questions (FAQs)
+                - paragraph [ref=f25e217]:
+                  - strong [ref=f25e218]: COMING SOON
+            - generic [ref=f25e220]:
+              - generic [ref=f25e236]:
+                - paragraph
+                - heading [level=2] [ref=f25e237]:
+                  - strong [ref=f25e238]: Quick Links
+                - paragraph [ref=f25e239]:
+                  - link [ref=f25e240] [cursor=pointer]:
+                    - /url: https://www.medicaid.gov/
+                    - strong [ref=f25e241]: Click To Navigate To The Medicaid.gov Website
+                - paragraph [ref=f25e242]:
+                  - link [ref=f25e243] [cursor=pointer]:
+                    - /url: https://confluenceent.cms.gov/spaces/MCBTAT/pages/1245102183/MACTrack+Enhancement+Change+Request
+                    - strong [ref=f25e244]: Click To Submit An Enhancement Request Form
+                - paragraph [ref=f25e245]: "Please note: User must have permission to log into CMS Enterprise Confluence to access the form."
+              - generic [ref=f25e247]:
+                - heading "Tabs" [level=2] [ref=f25e248]
+                - generic [ref=f25e249]:
+                  - tablist [ref=f25e250]:
+                    - tab "Help Center" [selected] [ref=f25e251] [cursor=pointer]
+                  - tabpanel [ref=f25e253]:
+                    - link "Access Knowledge" [ref=f25e256] [cursor=pointer]:
+                      - /url: https://cmsapps5--cmcsmcqa.sandbox.lightning.force.com/lightning/o/Knowledge__kav/list?filterName=published_articles
+                    - paragraph [ref=f25e260]:
+                      - link "Email Help Desk" [ref=f25e261] [cursor=pointer]:
+                        - /url: mailto:MACTRACKSUPPORT@cms.hhs.gov
+  - generic:
+    - status

@@ -1,0 +1,40 @@
+- generic:
+  - generic [ref=f25e2]:
+    - generic [ref=f25e3]:
+      - link "Skip to Navigation" [ref=f25e4] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - link "Skip to Main Content" [ref=f25e5] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - generic [ref=f25e8]:
+        - generic [ref=f25e9]: "Sandbox: CMCSMCQA |"
+        - link "Log out" [ref=f25e10] [cursor=pointer]:
+          - /url: /secur/logout.jsp
+      - generic [ref=f25e11]:
+        - button "Search" [ref=f25e641]: Search...
+        - navigation "Global Header" [ref=f25e23]:
+          - list [ref=f25e25]:
+            - listitem [ref=f25e26]
+            - listitem [ref=f25e46]
+            - listitem [ref=f25e60]
+            - listitem
+            - listitem [ref=f25e71]
+            - listitem [ref=f25e84]
+    - generic [ref=f25e92]:
+      - generic [ref=f25e95]:
+        - generic [ref=f25e97]:
+          - navigation "App" [ref=f25e98]:
+            - button "App Launcher" [ref=f25e100] [cursor=pointer]
+          - heading "MACTrack" [level=1] [ref=f25e112]
+        - navigation "Global" [ref=f25e116]:
+          - list [ref=f25e117]:
+            - listitem [ref=f25e118]
+      - main [ref=f25e122]:
+        - generic [ref=f25e654]:
+          - generic [ref=f25e663]:
+            - generic [ref=f25e664]
+            - generic [ref=f25e713]
+          - generic [ref=f25e752]:
+            - generic [ref=f25e760]
+            - generic [ref=f25e1455]
+  - generic:
+    - status

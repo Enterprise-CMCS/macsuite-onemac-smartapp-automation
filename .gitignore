@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Saved browser sessions are credentials
+playwright/.auth/
+*.auth.json
+storage-state*.json
+
+# Playwright output
+playwright-report/
+test-results/
+playwright/.cache/
+playwright/.records/
+blob-report/
+.playwright-mcp/
+
+# OS and editor files
+.DS_Store
+.vscode/
+.idea/

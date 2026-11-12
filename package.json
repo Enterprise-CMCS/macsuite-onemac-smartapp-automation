@@ -1,0 +1,36 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "playwright test --config=playwright.unit.config.ts",
+    "check:customizations": "node scripts/checks/check-customizations.cjs",
+    "quality": "npm run check:customizations && npm run typecheck && npm run test:unit && npm run test:list && playwright test --config=playwright.onemac.config.ts --list",
+    "spa:current": "tsx support/data/current-spa.ts",
+    "test:smart": "playwright test --project=chromium",
+    "test:onemac": "playwright test --config=playwright.onemac.config.ts --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts",
+    "test:onemac-rai-response": "playwright test --config=playwright.onemac.config.ts --headed tests/onemac/workflow/OneMAC-respond-rai.spec.ts",
+    "test:onemac-status": "playwright test --config=playwright.onemac.config.ts --headed tests/onemac/status/OneMAC-status-under-review.spec.ts",
+    "test:all": "node tests/suites/run-suite-approval.mjs",
+    "test:rai": "node tests/suites/run-suite-rai.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "dotenv": "^18.0.8",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1"
+  },
+  "dependencies": {
+    "otplib": "^12.0.1"
+  }
+}

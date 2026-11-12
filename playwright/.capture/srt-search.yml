@@ -1,0 +1,88 @@
+- generic:
+  - generic:
+    - generic [ref=f25e2]:
+      - generic [ref=f25e3]:
+        - link "Skip to Navigation" [ref=f25e4] [cursor=pointer]:
+          - /url: javascript:void(0);
+        - link "Skip to Main Content" [ref=f25e5] [cursor=pointer]:
+          - /url: javascript:void(0);
+        - generic [ref=f25e8]:
+          - generic [ref=f25e9]: "Sandbox: CMCSMCQA |"
+          - link "Log out" [ref=f25e10] [cursor=pointer]:
+            - /url: /secur/logout.jsp
+        - generic [ref=f25e11]:
+          - button "Search" [ref=f25e18]: Search...
+          - navigation "Global Header" [ref=f25e23]:
+            - list [ref=f25e25]:
+              - listitem [ref=f25e26]:
+                - group [ref=f25e27]
+              - listitem [ref=f25e46]:
+                - button "Global Actions" [ref=f25e52] [cursor=pointer]
+              - listitem [ref=f25e60]:
+                - button "Salesforce Help" [ref=f25e63] [cursor=pointer]
+              - listitem
+              - listitem [ref=f25e71]:
+                - button "Notifications" [ref=f25e74] [cursor=pointer]
+              - listitem [ref=f25e84]:
+                - button "View profile" [ref=f25e87] [cursor=pointer]
+      - generic [ref=f25e92]:
+        - generic [ref=f25e95]:
+          - generic [ref=f25e97]:
+            - navigation "App" [ref=f25e98]:
+              - button "App Launcher" [ref=f25e100] [cursor=pointer]
+            - heading "MACTrack" [level=1] [ref=f25e112]
+          - navigation "Global" [ref=f25e116]:
+            - list [ref=f25e117]:
+              - listitem [ref=f25e118] [cursor=pointer]:
+                - link "Home" [ref=f25e119]:
+                  - /url: /lightning/page/home
+        - main [ref=f25e122]:
+          - generic [ref=f25e130]:
+            - generic [ref=f25e147]:
+              - paragraph
+              - heading "Welcome to the MACTrack Salesforce Application Space" [level=2] [ref=f25e148]:
+                - strong [ref=f25e149]: Welcome to the MACTrack Salesforce Application Space
+              - paragraph [ref=f25e150]: The mission of these applications is to create an innovative and efficient work management system that leverages Salesforce to automate and streamline workflows, enabling seamless collaboration, improved accuracy, and faster turnaround times. By utilizing Salesforce’s robust automation tools, we aim to reduce manual processes, enhance transparency, and empower our team to focus on delivering exceptional service and driving organizational success.
+              - paragraph [ref=f25e151]: To access a Tracker application, select the appropriate tile below.If you do not see any tiles displayed, please contact the MACTRACK Help Desk to confirm your access authorization by clicking on the link in Help Center.
+            - generic [ref=f25e153]:
+              - generic [ref=f25e154]:
+                - article [ref=f25e158]
+                - generic [ref=f25e191]
+                - generic [ref=f25e214]
+              - generic [ref=f25e220]:
+                - generic [ref=f25e236]
+                - generic [ref=f25e247]
+    - dialog [ref=f25e265]:
+      - generic [ref=f25e267]:
+        - heading "Search..." [level=2] [ref=f25e268]
+        - generic [ref=f25e269]:
+          - generic [ref=f25e270]:
+            - generic [ref=f25e271]:
+              - alert [ref=f25e272]
+              - generic [ref=f25e273]:
+                - generic [ref=f25e274]: Search by object type
+                - combobox "Search by object type" [ref=f25e282]: "Search: All"
+                - status
+            - generic [ref=f25e291]:
+              - generic [ref=f25e292]: Search...
+              - searchbox "Search..." [active] [ref=f25e294]
+          - generic [ref=f25e298]:
+            - generic [ref=f25e301]:
+              - listbox "Suggestions" [ref=f25e302]:
+                - generic [ref=f25e303]
+                - generic [ref=f25e316]
+                - generic [ref=f25e329]
+                - generic [ref=f25e342]
+                - generic [ref=f25e355]
+                - generic [ref=f25e369]
+              - status:
+                - generic [ref=f25e430]: To scroll through your search results, press the arrow keys.
+            - region [ref=f25e386]:
+              - generic [ref=f25e388]:
+                - heading "Do more with Search!" [level=2] [ref=f25e391]
+                - generic [ref=f25e400]
+                - generic [ref=f25e417]
+                - link "Learn More" [ref=f25e427] [cursor=pointer]:
+                  - /url: /HelpAndTrainingDoor?version=2&resource=https%3A%2F%2Fhelp.salesforce.com%2FarticleView%3Fid%3Dsearch_ai_natural_lang_examples.htm
+  - generic:
+    - status
