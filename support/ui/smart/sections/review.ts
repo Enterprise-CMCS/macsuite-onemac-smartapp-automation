@@ -20,12 +20,16 @@ export class SmartReview {
 
     // SRT and CPOC review progress are both set on the Submission Review Team record, opened from the Review tab.
     // The SPA ID link on that record is the only way back to the main SPA page, so it is clicked after the save.
-    async setReviewTeamProgress(memberName: string, progress: string, spaId: string, clock: ReviewClock): Promise<void> {
+    // Disapproving Groups only appears once Recommending Disapproval is selected, so it is set after Review Progress.
+    async setReviewTeamProgress(memberName: string, progress: string, spaId: string, clock: ReviewClock, disapprovingGroup?: string): Promise<void> {
         await this.openReviewTeamRecord(memberName);
         // Review Progress is saved from its own edit control in Information; the Path bar only shows the stage.
         await this.page.getByRole('button', { name: 'Edit Review Progress', exact: true }).click();
         const progressField = this.page.getByRole('combobox', { name: 'Review Progress', exact: true });
         await this.selectComboboxOption(progressField, progress);
+        if (disapprovingGroup) {
+            await this.selectComboboxOption(this.page.getByRole('combobox', { name: 'Disapproving Groups', exact: true }), disapprovingGroup);
+        }
         await this.saveReviewTeamRecord(progressField, spaId);
         await this.expectReviewTeamProgress(memberName, progress, clock);
     }

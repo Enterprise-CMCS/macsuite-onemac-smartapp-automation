@@ -2,9 +2,7 @@
 
 Environment variables go before the command. Run from the repository root.
 
-`playwright.config.ts` runs SMART specs (`tests/`, excluding `tests/unit`). `playwright.onemac.config.ts`
-runs OneMAC specs (`tests/onemac`) at a 1600x900 viewport, versus 1820x980 for the default config. The default config also runs OneMAC specs, so the commands below don't pass `--config`. Add `--config=playwright.onemac.config.ts`
-to any OneMAC command to get the 1600x900 viewport the npm scripts use.
+`playwright.config.ts` runs all specs (`tests/`, excluding `tests/unit`) at a 1820x980 viewport.
 
 `SPA_STATE` selects the state whose record store the OneMAC specs read. The OneMAC workflow specs (`OneMAC-new-SPA`,
 `OneMAC-respond-rai`, `OneMAC-withdraw-rai`, and `cpoc-enable-rai-withdrawal`) have no default, so you must set it on every run, and they fail before any browser step if it's
@@ -49,8 +47,8 @@ Copy and run any line below. Each runs one spec with the role it needs.
 | SRT recommend RAI approval | `SF_ROLE=SRT npx playwright test tests/smart/srt/srt-recommend-rai-approval.spec.ts --project=chromium --headed` |
 | SRT subsequent documents (read-only check of the newest Pending - First Clock SPA) | `SPA_STATE=CA SF_ROLE=SRT npx playwright test tests/smart/srt/srt-subsequent-documents.spec.ts --project=chromium --headed` |
 | CPOC enable RAI withdrawal (flips withdrawal to Enabled in SMART) | `SPA_STATE=CO SF_ROLE=CPOC npx playwright test tests/smart/cpoc/cpoc-enable-rai-withdrawal.spec.ts --project=chromium --headed` |
-| Division Director approve | `SF_ROLE=DIVDIR npx playwright test tests/smart/approval/division-dir-approve.spec.ts --project=chromium --headed` |
-| Group Director concur | `SF_ROLE=GROUPDIR npx playwright test tests/smart/concurrence/group-dir-concur.spec.ts --project=chromium --headed` |
+| Division Director approve | `SF_ROLE=DIVDIR npx playwright test tests/smart/division-director/division-dir-approve.spec.ts --project=chromium --headed` |
+| Group Director concur | `SF_ROLE=GROUPDIR npx playwright test tests/smart/group-director/group-dir-concur.spec.ts --project=chromium --headed` |
 
 Each row uses its own account: the Division Director and Group Director steps run as `DIVDIR` and `GROUPDIR`, and each test checks that its account is recorded in Acted By User.
 

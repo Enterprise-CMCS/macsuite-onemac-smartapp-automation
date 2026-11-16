@@ -24,7 +24,7 @@ export default defineConfig({
     ['html'],
     // JUnit XML is parsed by TestRail CLI (trcli parse_junit).
     ['junit', { embedAnnotationsAsProperties: true, outputFile: './test-results/junit-report.xml' }],
-    // Set by scripts/lib/run-suite.mjs so each step's results can be merged into one HTML report.
+    // Set by tests/suites/lib/run-suite.mjs so each step's results can be merged into one HTML report.
     ...(process.env.SUITE_BLOB ? [['blob', { outputDir: './blob-report' }] as const] : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

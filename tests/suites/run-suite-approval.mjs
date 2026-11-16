@@ -1,10 +1,11 @@
-import { runSuite } from './lib/run-suite.mjs';
+import { fileURLToPath } from 'node:url';
+import { runSuites } from './lib/run-suite.mjs';
 
 // Edit this list to change the run order. Steps run one at a time and the suite stops at the first failure.
-const suite = [
+const steps = [
     {
         name: 'OneMAC: create Med SPA',
-        config: 'playwright.onemac.config.ts',
+        config: 'playwright.config.ts',
         file: 'tests/onemac/workflow/OneMAC-new-SPA.spec.ts',
         args: ['--headed'],
     },
@@ -17,7 +18,7 @@ const suite = [
     },
     {
         name: 'OneMAC: Med SPA status is Under Review',
-        config: 'playwright.onemac.config.ts',
+        config: 'playwright.config.ts',
         file: 'tests/onemac/status/OneMAC-status-under-review.spec.ts',
         args: ['--headed'],
     },
@@ -45,23 +46,27 @@ const suite = [
     {
         name: 'SMART: Med SPA - group director concurs',
         config: 'playwright.config.ts',
-        file: 'tests/smart/concurrence/group-dir-concur.spec.ts',
+        file: 'tests/smart/group-director/group-dir-concur.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'GROUPDIR',
     },
     {
         name: 'SMART: Med SPA - division director approves',
         config: 'playwright.config.ts',
-        file: 'tests/smart/approval/division-dir-approve.spec.ts',
+        file: 'tests/smart/division-director/division-dir-approve.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'DIVDIR',
     },
     {
         name: 'OneMAC: Med SPA - final review is Approved',
-        config: 'playwright.onemac.config.ts',
+        config: 'playwright.config.ts',
         file: 'tests/onemac/status/OneMAC-final-review-approved.spec.ts',
         args: ['--headed'],
     },
 ];
 
-runSuite(suite);
+export const suite = { name: 'Med SPA Approval suite', steps };
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    runSuites([suite], { title: suite.name });
+}

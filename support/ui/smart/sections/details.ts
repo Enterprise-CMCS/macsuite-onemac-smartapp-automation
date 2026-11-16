@@ -30,6 +30,15 @@ export class SmartDetails {
         await expect(field).toHaveText(value);
     }
 
+    // Later CPOC steps rely on Priority Code set by the first CPOC action, so fail early if it is blank.
+    // The Details value span for Priority Code renders no text; the visible value is in the record highlights panel.
+    async expectPriorityCodeSet(): Promise<void> {
+        const message = 'Priority Code must be set by the first CPOC action before this step';
+        const highlight = this.page.locator('record_flexipage-record-field')
+            .filter({ visible: true, hasText: /Priority Code\s+\S/ });
+        await expect(highlight, message).toHaveCount(1);
+    }
+
     // Live Details rows are listitems; the label and value share a row container with no sibling link to the label.
     async expectRowValue(label: string, value: string): Promise<void> {
         const row = this.page.getByRole('listitem')

@@ -48,7 +48,7 @@ SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --headed --
 SF_ROLE=CPOC npm run test:smart -- intake.spec.ts --headed
 npm run test:onemac -- --list
 npx playwright test --config=playwright.unit.config.ts
-SPA_STATE=CA npx playwright test --config=playwright.onemac.config.ts --project=chromium --headed
+SPA_STATE=CA npx playwright test --project=chromium --headed
 ```
 
 The direct `npx playwright test` command above is the current intake command.
@@ -209,7 +209,6 @@ support/
 test-data/
   attachments/                # Approved, synthetic upload fixtures
 playwright.config.ts
-playwright.onemac.config.ts    # Opt-in creation, never a Salesforce dependency
 .env.example                  # Variable names and placeholders only
 TASKS.md
 ```

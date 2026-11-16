@@ -64,7 +64,7 @@ are not in the fixture yet.
 | 3 | CPOC | Try to recommend disapproval before all active SRTs have recommended. | Blocked until every active SRT has given a recommendation. |
 | 4 | CPOC | Recommend disapproval after all SRTs have recommended. | Recommendation is saved. |
 | 5 | System | Check the adjudicator. | Adjudicator is set from the disapproving SRT group; a Disapproving Groups dropdown appears when there is more than one group. |
-| 6 | Adjudicator | Select outcome Disapproved. | Outcome is checked against the CPOC recommendation. |
+| 6 | Adjudicator | Record decision Disapprove on the Adjudication row. | SPA status becomes Disapproved. Concurrence is skipped. |
 | 7 | System | Check the record. | Clock stops; record is locked. |
 
 ## F6. Reversed recommendation after review

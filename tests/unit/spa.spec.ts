@@ -221,6 +221,36 @@ test.describe('persistent SPA records', () => {
         await expect(store.markReviewCompleted('CA-26-0099', 'srt')).rejects.toThrow('not in Pending - First Clock');
     });
 
+    test('SRT and CPOC recommending disapproval moves the SPA to Pending - Disapproval, then Disapproved', async () => {
+        const store = createSpaRecordStore(environment, seed, directory);
+        const spaId = await store.reserve();
+        await store.markSubmitted(spaId);
+        await store.markPendingFirstClock(spaId);
+        await store.markReviewCompleted(spaId, 'srt', 'disapprove');
+        await store.markReviewCompleted(spaId, 'cpoc', 'disapprove');
+        expect(await store.latestPendingDisapproval()).toMatchObject({ spaId, smartStatus: 'pending_disapproval' });
+        await store.markDisapproved(spaId);
+        expect(await createSpaRecordStore(environment, seed, directory).find(spaId)).toMatchObject({ smartStatus: 'disapproved' });
+    });
+
+    test('returning to review clears earlier reviewer decisions so SRT and CPOC must finish again', async () => {
+        const store = createSpaRecordStore(environment, seed, directory);
+        const spaId = await store.reserve();
+        await store.markSubmitted(spaId);
+        await store.markPendingFirstClock(spaId);
+        await store.markReviewCompleted(spaId, 'srt', 'disapprove');
+        await store.markReviewCompleted(spaId, 'cpoc', 'disapprove');
+        await store.markReturnedToReview(spaId);
+        expect(await store.find(spaId)).toMatchObject({ smartStatus: 'pending_first_clock' });
+        expect((await store.find(spaId)).reviewsCompleted).toBeUndefined();
+        expect((await store.find(spaId)).reviewRecommendations).toBeUndefined();
+        await store.markReviewCompleted(spaId, 'srt', 'approve');
+        await store.markReviewCompleted(spaId, 'cpoc', 'approve');
+        expect(await store.find(spaId)).toMatchObject({ smartStatus: 'pending_concurrence' });
+        expect(await store.latestAwaitingGroupDirector()).toMatchObject({ spaId, smartStatus: 'pending_concurrence' });
+        await expect(store.markReturnedToReview('CA-26-0099')).rejects.toThrow('no SMART status');
+    });
+
     test('saved OneMAC details are handed off with the submitted SPA', async () => {
         const store = createSpaRecordStore(environment, seed, directory);
         const spaId = await store.reserve();

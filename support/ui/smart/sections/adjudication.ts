@@ -18,10 +18,11 @@ export class SmartAdjudication {
         return this.page.getByRole('article', { name: section, exact: true });
     }
 
-    async recordDecision(section: DecisionSection, decision: 'Concur' | 'Approve'): Promise<void> {
+    // rowNumber selects that row by its position in the grid, for example 2 for the pending row after a return.
+    async recordDecision(section: DecisionSection, decision: 'Concur' | 'Approve' | 'Disapprove' | 'Return to Review Team', options: { rowNumber?: number } = {}): Promise<void> {
         const grid = this.sectionFor(section);
         // The row checkbox's label intercepts pointer clicks, so the input is checked with force.
-        const rowCheckbox = grid.getByRole('checkbox', { name: /Select Item 1/ });
+        const rowCheckbox = grid.getByRole('checkbox', { name: new RegExp(`Select Item ${options.rowNumber ?? 1}\\b`) });
         await rowCheckbox.check({ force: true });
         await expect(rowCheckbox).toBeChecked();
         await grid.getByRole('button', { name: 'Record Decision', exact: true }).click();

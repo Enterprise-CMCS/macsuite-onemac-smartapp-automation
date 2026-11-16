@@ -21,6 +21,10 @@ The goal is to create a OneMAC submission once per new sequential SPA ID, persis
 
 `npm run test:rai` runs OneMAC creation, SMART intake, SRT RAI, CPOC RAI, and the OneMAC RAI Issued status check in order. The step order is defined in `tests/suites/run-suite-rai.mjs`. Both suites share the runner in `tests/suites/lib/run-suite.mjs`.
 
+`npm run test:all-suites` runs the approval, RAI, and RAI withdrawal suites in order, each stopping at its own first failure, and posts one combined Slack message. The message shows totals across all suites, a count line per suite, and only the failed or flaky tests under each suite. Each suite's steps are defined in its `tests/suites/run-suite-*.mjs` file, which exports `suite`. The entry point is `tests/suites/run-all.mjs`.
+
+When `SLACK_WEBHOOK_URL` is set, each run posts one Slack message. Set it in your shell with `read -s SLACK_WEBHOOK_URL && export SLACK_WEBHOOK_URL` so the URL stays out of shell history. The layout is in `tests/suites/lib/slack-layout.js`. If the variable is unset, the run skips Slack and continues.
+
 When the suite finishes, open `playwright-report/index.html` for one report that covers every step that ran. Each step's JUnit file is saved as `test-results/junit-<step number>.xml` for TestRail.
 
 ## Project Layout
@@ -45,8 +49,7 @@ scripts/checks/check-customizations.cjs
 
 ## Configurations
 
-- `playwright.config.ts`: default SMART suite, Chromium only, one worker, no retries.
-- `playwright.onemac.config.ts`: opt-in OneMAC creation suite. It has no dependency on the SMART tests.
+- `playwright.config.ts`: default Playwright suite (SMART and OneMAC), Chromium only, one worker, no retries.
 - `playwright.unit.config.ts`: local unit checks.
 
 ## Important Notes

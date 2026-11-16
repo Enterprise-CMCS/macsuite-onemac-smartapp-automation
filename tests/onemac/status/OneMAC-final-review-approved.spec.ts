@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 import { test } from '../../../support/fixtures/onemac.fixture';
 import { appUrls } from '../../../support/config/urls';
 import { spaOptionsFromEnv } from '../../../support/data/spa';

@@ -17,6 +17,7 @@ playwright-report/
 test-results/
 playwright/.cache/
 playwright/.records/
+playwright/.capture/
 blob-report/
 .playwright-mcp/
 

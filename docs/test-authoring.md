@@ -80,7 +80,7 @@ SF_ROLE=INTAKE npx playwright test tests/smart/discovery/api-discovery.spec.ts -
 Create a new OneMAC SPA explicitly:
 
 ```sh
-SPA_STATE=CA npx playwright test --config=playwright.onemac.config.ts --project=chromium --headed
+SPA_STATE=CA npx playwright test --project=chromium --headed
 ```
 
 OneMAC creation submits a record. Run that command only when you intend to create

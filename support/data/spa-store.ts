@@ -7,10 +7,11 @@ import { formatSpaId, SpaOptions } from './spa';
 export type OnemacStatus = 'reserved' | 'submitted' | 'under_review';
 
 // SMART workflow stage. The tests use it to pick the record they run against. Null until intake sets it.
-export type SmartStatus = 'pending_first_clock' | 'pending_rai' | 'pending_second_clock' | 'pending_concurrence' | 'pending_approval' | 'approved';
+export type SmartStatus = 'pending_first_clock' | 'pending_rai' | 'pending_second_clock' | 'pending_concurrence' | 'pending_approval' | 'approved' | 'pending_disapproval' | 'disapproved';
 
 // Reviewer roles that must both finish during Pending - First Clock before the SPA moves to Pending - Concurrence.
 export type ReviewRole = 'srt' | 'cpoc';
+export type ReviewRecommendation = 'approve' | 'disapprove';
 const reviewRoles: ReviewRole[] = ['srt', 'cpoc'];
 
 type SpaRecord = {
@@ -22,6 +23,7 @@ type SpaRecord = {
     underReviewAt?: string;
     smartStatusAt?: string;
     reviewsCompleted?: Partial<Record<ReviewRole, string>>;
+    reviewRecommendations?: Partial<Record<ReviewRole, ReviewRecommendation>>;
     raiReviewsCompleted?: Partial<Record<ReviewRole, string>>;
     details?: SpaSubmissionDetails;
     raiDetails?: SpaRaiDetails;
@@ -36,7 +38,7 @@ type StoredRecord = Omit<SpaRecord, 'onemacStatus' | 'smartStatus'> & {
 };
 
 const onemacStatuses: OnemacStatus[] = ['reserved', 'submitted', 'under_review'];
-const smartStatuses: SmartStatus[] = ['pending_first_clock', 'pending_rai', 'pending_second_clock', 'pending_concurrence', 'pending_approval', 'approved'];
+const smartStatuses: SmartStatus[] = ['pending_first_clock', 'pending_rai', 'pending_second_clock', 'pending_concurrence', 'pending_approval', 'approved', 'pending_disapproval', 'disapproved'];
 
 // Values captured from the OneMAC package details page for verification in SMART.
 export type SpaSubmissionDetails = {
@@ -238,16 +240,19 @@ export function createSpaRecordStore(
             // Intake is done for this SPA, so the latest-submitted lookup must not return it again.
             if (data.latestSubmittedSpaId === spaId) data.latestSubmittedSpaId = null;
         }),
-        // Called when a reviewer finishes. Once SRT and CPOC are both done, the SPA moves to Pending - Concurrence.
-        markReviewCompleted: (spaId: string, role: ReviewRole) => update((data) => {
+        // Called when a reviewer finishes. Once SRT and CPOC are both done, the SPA moves to Pending - Concurrence,
+        // or to Pending - Disapproval when either reviewer recommended disapproval (disapproval skips concurrence).
+        markReviewCompleted: (spaId: string, role: ReviewRole, recommendation: ReviewRecommendation = 'approve') => update((data) => {
             const record = data.records.find((candidate) => candidate.spaId === spaId);
             if (!record || record.smartStatus === null) {
                 throw new Error(`Cannot record ${role.toUpperCase()} completion for an SPA not in Pending - First Clock: ${spaId}`);
             }
             if (record.smartStatus !== 'pending_first_clock') return;
             record.reviewsCompleted = { ...record.reviewsCompleted, [role]: record.reviewsCompleted?.[role] ?? new Date().toISOString() };
+            record.reviewRecommendations = { ...record.reviewRecommendations, [role]: recommendation };
             if (reviewRoles.every((reviewRole) => record.reviewsCompleted?.[reviewRole])) {
-                record.smartStatus = 'pending_concurrence';
+                const disapproved = reviewRoles.some((reviewRole) => record.reviewRecommendations?.[reviewRole] === 'disapprove');
+                record.smartStatus = disapproved ? 'pending_disapproval' : 'pending_concurrence';
                 record.smartStatusAt = new Date().toISOString();
             }
         }),
@@ -285,6 +290,22 @@ export function createSpaRecordStore(
         markConcurred: (spaId: string) => update((data) => moveSmartStatus(data, spaId, 'pending_concurrence', 'pending_approval')),
         // Called after the Division Director records Approve.
         markApproved: (spaId: string) => update((data) => moveSmartStatus(data, spaId, 'pending_approval', 'approved')),
+        // Called after the Group Director records Disapprove on the Adjudication row.
+        markDisapproved: (spaId: string) => update((data) => moveSmartStatus(data, spaId, 'pending_disapproval', 'disapproved')),
+        // Called after the Group Director records Return to Review Team on the Concurrence or Adjudication row.
+        // SRT and CPOC must finish again, so their completions and recommendations are cleared.
+        markReturnedToReview: (spaId: string) => update((data) => {
+            const record = data.records.find((candidate) => candidate.spaId === spaId);
+            if (!record || record.smartStatus === null) throw new Error(`Cannot return ${spaId} to review: no SMART status recorded.`);
+            if (record.smartStatus === 'pending_first_clock') return;
+            if (record.smartStatus !== 'pending_concurrence' && record.smartStatus !== 'pending_disapproval') {
+                throw new Error(`Cannot return ${spaId} to review from ${record.smartStatus}.`);
+            }
+            record.smartStatus = 'pending_first_clock';
+            record.smartStatusAt = new Date().toISOString();
+            delete record.reviewsCompleted;
+            delete record.reviewRecommendations;
+        }),
         // Called after the OneMAC status check sees Under Review for this SPA.
         markOnemacUnderReview: (spaId: string) => update((data) => {
             const record = data.records.find((candidate) => candidate.spaId === spaId);
@@ -333,6 +354,17 @@ export function createSpaRecordStore(
         latestPendingApproval: () => latestInSmartStatus('pending_approval'),
         // The newest SPA the Division Director has approved; the OneMAC final review checks it.
         latestApproved: () => latestInSmartStatus('approved'),
+        // The newest SPA SRT and CPOC recommended for disapproval; the Group Director records the decision next.
+        latestPendingDisapproval: () => latestInSmartStatus('pending_disapproval'),
+        // The newest SPA the Group Director returns to review, from either Pending - Concurrence or Pending - Disapproval.
+        latestAwaitingGroupDirector: async () => {
+            const data = await read();
+            const record = [...data.records].reverse().find((candidate) => candidate.smartStatus === 'pending_concurrence' || candidate.smartStatus === 'pending_disapproval');
+            if (!record) {
+                throw new Error(`No SPA awaiting the Group Director for ${environment}, ${state}-${options.year}. Run the earlier suite steps first.`);
+            }
+            return { ...record, environment, state, year: options.year };
+        },
     };
 }
 

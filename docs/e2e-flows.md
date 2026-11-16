@@ -85,7 +85,7 @@ Intake -> SRT (RAI Needed = No) -> CPOC -> Concurrer -> Adjudicator
 - Continue as F1.
 
 ### F5. Disapproval
-Intake -> SRT (one or more Disapproval) -> CPOC (Recommending Disapproval) -> Concurrer -> Adjudicator (Disapproved)
+Intake -> SRT (Recommending Disapproval) -> CPOC (Recommending Disapproval) -> Adjudicator (Disapprove) -> Disapproved. Concurrence is skipped.
 
 - CPOC cannot recommend disapproval until all active SRTs have recommended (C1760398).
 - Adjudicator is auto-assigned from the disapproving SRT group; with multiple groups a
