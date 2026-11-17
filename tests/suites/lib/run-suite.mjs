@@ -155,10 +155,11 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
     }
 
     // Merge runs even after a failure so the HTML report shows every step that ran. merge-reports takes the blob directory, not individual zip paths.
+    // PLAYWRIGHT_HTML_TITLE sets the report title, so the HTML report opens with the suite name.
     const htmlMerge = spawnSync(
         'npx',
         ['playwright', 'merge-reports', '--config=playwright.merge.config.ts', '--reporter=html', blobDir],
-        { stdio: 'inherit' },
+        { stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_HTML_TITLE: title } },
     );
     if (htmlMerge.status !== 0) {
         console.error('\nCould not merge the step reports into playwright-report/.');

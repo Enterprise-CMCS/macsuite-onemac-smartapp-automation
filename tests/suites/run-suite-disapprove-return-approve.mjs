@@ -3,7 +3,8 @@ import { runSuites } from './lib/run-suite.mjs';
 
 // Edit this list to change the run order. Steps run one at a time and the suite stops at the first failure.
 // Runs every step against one SPA_STATE, like the other suites. SRT and CPOC recommend disapproval first, the Group Director
-// returns the SPA to review from Pending - Disapproval, then SRT and CPOC approve and the chain runs through the Division Director.
+// returns the SPA to review from Pending - Disapproval, then SRT and CPOC recommend RAI, OneMAC responds to the formal RAI,
+// SRT and CPOC recommend approval for the RAI response, and the chain runs through the Division Director.
 const steps = [
     {
         name: 'OneMAC: Med SPA - create SPA',
@@ -45,21 +46,45 @@ const steps = [
         args: ['--project=chromium', '--headed'],
         role: 'GROUPDIR',
     },
-    // add new SRT
-    // request RAI
-    // onemac formal response
-    // check for spending second review
     {
-        name: 'SMART: Med SPA - SRT recommends approval',
+        name: 'SMART: Med SPA - SRT recommends RAI after return',
         config: 'playwright.config.ts',
-        file: 'tests/smart/srt/srt-recommend-approval.spec.ts',
+        file: 'tests/smart/srt/srt-recommend-rai.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'SRT',
     },
     {
-        name: 'SMART: Med SPA - CPOC recommends approval after disapproval',
+        // Records the RAI dates in the local store, which the OneMAC status check reads.
+        name: 'SMART: Med SPA - CPOC recommends RAI after return',
         config: 'playwright.config.ts',
-        file: 'tests/smart/cpoc/cpoc-recommend-approval-after-disapproval.spec.ts',
+        file: 'tests/smart/cpoc/cpoc-recommend-rai.spec.ts',
+        args: ['--project=chromium', '--headed'],
+        role: 'CPOC',
+    },
+    {
+        name: 'OneMAC: Med SPA - status is RAI Issued',
+        config: 'playwright.config.ts',
+        file: 'tests/onemac/status/OneMAC-status-rai-issued.spec.ts',
+        args: ['--headed'],
+    },
+    {
+        name: 'OneMAC: Med SPA - responds to formal RAI',
+        config: 'playwright.config.ts',
+        file: 'tests/onemac/workflow/OneMAC-respond-rai.spec.ts',
+        args: ['--headed'],
+    },
+    {
+        // Verifies the RAI response in SMART, then SRT records the second clock review.
+        name: 'SMART: Med SPA - SRT validates second clock and recommends approval',
+        config: 'playwright.config.ts',
+        file: 'tests/smart/srt/srt-recommend-rai-approval.spec.ts',
+        args: ['--project=chromium', '--headed'],
+        role: 'SRT',
+    },
+    {
+        name: 'SMART: Med SPA - CPOC recommends approval for RAI response',
+        config: 'playwright.config.ts',
+        file: 'tests/smart/cpoc/cpoc-recommend-rai-approval.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'CPOC',
     },

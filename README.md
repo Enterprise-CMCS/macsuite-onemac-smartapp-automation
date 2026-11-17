@@ -17,24 +17,26 @@ The goal is to create a OneMAC submission once per new sequential SPA ID, persis
 
 ## Running the Suite
 
-`npm run test:all` runs the approval workflow in order and stops at the first failure. The step order is defined in `tests/suites/run-suite-approval.mjs`.
+Suites run their steps in order against one SPA, one step at a time, and stop at the first failed step. Live suites need `SPA_STATE` set to one of `VA`, `CO`, `MD`, `CA`, or `AL`, because the OneMAC creation step has no default state. Each suite's steps are defined in its `tests/suites/run-suite-*.mjs` file, which exports `suite`. All suites share the runner in `tests/suites/lib/run-suite.mjs`.
 
-`npm run test:rai` runs OneMAC creation, SMART intake, SRT RAI, CPOC RAI, and the OneMAC RAI Issued status check in order. The step order is defined in `tests/suites/run-suite-rai.mjs`. Both suites share the runner in `tests/suites/lib/run-suite.mjs`.
-
-`npm run test:all-suites` runs the approval, RAI, and RAI withdrawal suites in order, each stopping at its own first failure, and posts one combined Slack message. The message shows totals across all suites, a count line per suite, and only the failed or flaky tests under each suite. Each suite's steps are defined in its `tests/suites/run-suite-*.mjs` file, which exports `suite`. The entry point is `tests/suites/run-all.mjs`.
+- `SPA_STATE=CA npm run test:all` runs the approval suite (`run-suite-approval.mjs`): create the SPA, SMART intake, SRT validates subsequent documents, SRT and CPOC recommend approval, group director concurs, division director approves, then the final review is checked in OneMAC.
+- `SPA_STATE=CA npm run test:rai` runs the RAI suite (`run-suite-rai.mjs`): create the SPA, intake, SRT and CPOC recommend RAI, OneMAC shows RAI Issued, OneMAC responds to the formal RAI, SRT and CPOC recommend approval for the RAI response, group director concurs, division director approves, then the final review is checked.
+- `SPA_STATE=CA npm run test:rai-withdrawal` runs the RAI withdrawal suite (`run-suite-rai-withdrawal.mjs`): the RAI path above, except that after the first RAI response CPOC enables RAI withdrawal, OneMAC withdraws the response and responds again, and then the approvals run.
+- `SPA_STATE=CA npm run test:all-suites` runs every `tests/suites/run-suite-*.mjs` file in filename order, each stopping at its own first failure, and posts one combined Slack message. The message shows totals across all suites, a count line per suite, and only the failed or flaky tests under each suite. The entry point is `tests/suites/run-all.mjs`.
+- The disapproval suites have no npm script. Run them directly, for example `SPA_STATE=VA node tests/suites/run-suite-disapprove-return-approve.mjs`. The others are `run-suite-disapproval.mjs` and `run-suite-approve-return-disapprove.mjs`.
 
 When `SLACK_WEBHOOK_URL` is set, each run posts one Slack message. Set it in your shell with `read -s SLACK_WEBHOOK_URL && export SLACK_WEBHOOK_URL` so the URL stays out of shell history. The layout is in `tests/suites/lib/slack-layout.js`. If the variable is unset, the run skips Slack and continues.
 
-When the suite finishes, open `playwright-report/index.html` for one report that covers every step that ran. Each step's JUnit file is saved as `test-results/junit-<step number>.xml` for TestRail.
+When the suite finishes, open `playwright-report/index.html` (or run `npx playwright show-report`) for one report that covers every step that ran. Its title is the suite name. Each step's JUnit file is saved as `test-results/junit-<suite>-<step number>.xml` for TestRail, where `<suite>` is the suite name in lowercase with hyphens (for example `med-spa-rai-suite-3`).
 
 ## Project Layout
 
 ```text
 tests/
-  onemac/                    OneMAC workflows (SPA creation, status checks)
-  smart/                     SMART role workflows (intake, API discovery)
+  onemac/                    OneMAC workflows (SPA creation, RAI responses and withdrawal, status checks)
+  smart/                     SMART role workflows (intake, SRT, CPOC, group director, division director)
   unit/                      Local unit checks for ID and record logic
-  suites/                    Ordered suite runners (npm run test:all, test:rai) and shared runner
+  suites/                    Ordered suite runners (see Running the Suite) and shared runner
 support/
   auth/                      OneMAC and SMART login helpers, TOTP
   config/                    Environment variables, URLs, role registry
