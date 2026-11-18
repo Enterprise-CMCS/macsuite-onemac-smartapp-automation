@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { chooseSpaId, duplicateSpaMessage, formatSpaId, requiredSpaOptionsFromEnv, SpaOptions, spaOptionsFromEnv, spaStates } from '../../support/data/spa';
+import { chooseSpaId, duplicateSpaMessage, formatSpaId, formatSplitSpaId, requiredSpaOptionsFromEnv, SpaOptions, spaOptionsFromEnv, spaStates } from '../../support/data/spa';
 import { createSpaRecordStore, selectSpaTarget } from '../../support/data/spa-store';
 import { currentSpaSummary } from '../../support/data/current-spa';
 import { onemacDisplayDate, toSmartDate } from '../../support/data/onemac-dates';
@@ -265,7 +265,89 @@ test.describe('persistent SPA records', () => {
         expect(await smartRun.latestSubmitted()).toMatchObject({ spaId, details });
     });
 
-    test('an interrupted reservation is never reused or handed off', async () => {
+    test('a split appends one character to a SPA ID and leaves standard IDs unchanged', () => {
+    expect(formatSplitSpaId('CA-26-0085-QA01', 'A')).toBe('CA-26-0085-QA01-A');
+    expect(formatSplitSpaId('MD-26-1234', 'B')).toBe('MD-26-1234-B');
+    for (const identifier of ['AB', 'a', '1', '']) {
+        expect(() => formatSplitSpaId('CA-26-0085-QA01', identifier)).toThrow('one character');
+    }
+    expect(() => formatSplitSpaId('CA-26-0085-QA01-A', 'B')).toThrow('standard SPA ID');
+});
+
+test('a split clones its parent, leaves the parent unchanged, and moves through its own stages', async () => {
+    const store = createSpaRecordStore(environment, seed, directory);
+    const parentId = await store.reserve();
+    await store.markSubmitted(parentId);
+    await store.markPendingFirstClock(parentId);
+    await store.saveDetails(parentId, { state: 'CA', initialSubmissionDate: '11/01/2026', proposedEffectiveDate: '01/01/2027', additionalInformation: 'test' });
+    const parentBefore = await store.find(parentId);
+
+    const splitId = await store.recordSplit(parentId, 'A', 'SRT reviews documents and CPOC reviews financials');
+    expect(splitId).toBe(`${parentId}-A`);
+    const reopened = createSpaRecordStore(environment, seed, directory);
+    expect(await reopened.find(splitId)).toMatchObject({
+        spaId: splitId,
+        onemacStatus: 'submitted',
+        smartStatus: 'pending_first_clock',
+        details: { additionalInformation: 'test' },
+        splitIdentifier: 'A',
+        splitReason: 'SRT reviews documents and CPOC reviews financials',
+    });
+    const withoutSplits = (record: object) => ({ ...record, splits: undefined });
+    expect(withoutSplits(await reopened.find(parentId))).toEqual(withoutSplits(parentBefore));
+    expect(await reopened.find(parentId)).toMatchObject({ splits: [{ spaId: splitId }] });
+    expect((await reopened.latestPendingFirstClock()).spaId).toBe(parentId);
+    expect((await reopened.latestPendingFirstClockWorkflow('srt')).map((record) => record.spaId)).toEqual([parentId, splitId]);
+
+    await store.markReviewCompleted(splitId, 'srt');
+    await store.markReviewCompleted(splitId, 'cpoc');
+    expect(await createSpaRecordStore(environment, seed, directory).find(splitId)).toMatchObject({ smartStatus: 'pending_concurrence' });
+    expect(withoutSplits(await createSpaRecordStore(environment, seed, directory).find(parentId))).toEqual(withoutSplits(parentBefore));
+});
+
+test('a finished SRT review is skipped on rerun, so the workflow moves on to the split', async () => {
+    const store = createSpaRecordStore(environment, seed, directory);
+    const parentId = await store.reserve();
+    await store.markSubmitted(parentId);
+    await store.markPendingFirstClock(parentId);
+    await store.markReviewCompleted(parentId, 'srt');
+    const splitId = await store.recordSplit(parentId, 'A', 'SRT reviews documents and CPOC reviews financials');
+    expect((await store.find(splitId)).reviewsCompleted).toBeUndefined();
+    expect((await store.latestPendingFirstClockWorkflow('srt')).map((record) => record.spaId)).toEqual([splitId]);
+});
+
+test('director workflows list SPAs still in their status, parent first, and drop each one once it moves on', async () => {
+    const store = createSpaRecordStore(environment, seed, directory);
+    const parentId = await store.reserve();
+    await store.markSubmitted(parentId);
+    await store.markPendingFirstClock(parentId);
+    const splitId = await store.recordSplit(parentId, 'A', 'SRT reviews documents and CPOC reviews financials');
+    await store.markReviewCompleted(parentId, 'srt');
+    await store.markReviewCompleted(parentId, 'cpoc');
+    await store.markReviewCompleted(splitId, 'srt');
+    await store.markReviewCompleted(splitId, 'cpoc');
+    expect((await store.latestPendingConcurrenceWorkflow()).map((record) => record.spaId)).toEqual([parentId, splitId]);
+    await store.markConcurred(parentId);
+    expect((await store.latestPendingConcurrenceWorkflow()).map((record) => record.spaId)).toEqual([splitId]);
+});
+
+test('a split is allowed from Intake Needed, refused once the SPA reaches concurrence, and cannot be split again', async () => {
+    const store = createSpaRecordStore(environment, seed, directory);
+    const spaId = await store.reserve();
+    await store.markSubmitted(spaId);
+    await expect(store.recordSplit(spaId, 'A', '  ')).rejects.toThrow('reason is required');
+    const splitId = await store.recordSplit(spaId, 'A', 'split at intake');
+    expect(await store.find(splitId)).toMatchObject({ smartStatus: null });
+    await expect(store.recordSplit(spaId, 'A', 'again')).rejects.toThrow('already exists');
+    await expect(store.recordSplit(splitId, 'B', 'nested')).rejects.toThrow('standard SPA');
+
+    await store.markPendingFirstClock(spaId);
+    await store.markReviewCompleted(spaId, 'srt');
+    await store.markReviewCompleted(spaId, 'cpoc');
+    await expect(store.recordSplit(spaId, 'B', 'too late')).rejects.toThrow('from pending_concurrence');
+});
+
+test('an interrupted reservation is never reused or handed off', async () => {
         const firstRun = createSpaRecordStore(environment, seed, directory);
         await firstRun.reserve();
         const nextRun = createSpaRecordStore(environment, seed, directory);

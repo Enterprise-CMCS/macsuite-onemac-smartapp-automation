@@ -70,13 +70,13 @@ Targeting a stored SPA:
 
 - `SPA_ID=<id>` works for specs that use the SMART fixture (for example, intake) and for `spa:current`.
 - Workflow specs read their own variables instead, and ignore `SPA_ID`:
-  - `CPOC_SPA_ID`: CPOC recommend specs
-  - `SRT_SPA_ID`: SRT recommend specs
-  - `CONCURRENCE_SPA_ID`: Group Director concur
-  - `ADJUDICATION_SPA_ID`: Division Director approve
+  - `CPOC_SPA_ID`: CPOC recommend specs that don't run the approval workflow
+  - `SRT_SPA_ID`: SRT recommend specs that don't run the approval workflow
+  - `ADJUDICATION_SPA_ID`: Division Director approve after return
   - `RAI_SPA_ID`: OneMAC RAI response
   - `RAI_WITHDRAWAL_SPA_ID`: CPOC enable RAI withdrawal and OneMAC RAI withdrawal
   - Without these variables, each spec uses the newest SPA in the required status.
+  - The SRT, CPOC recommend approval, Group Director concur, and Division Director approve specs run every SPA in the workflow (the newest parent and its splits still waiting), parent first. They skip any SPA the role already finished. They don't take a single-SPA variable.
 - `RAI_RESPONSE_DATE` overrides the stored formal RAI response date in `srt-recommend-rai-approval.spec.ts`.
 
 `SF_ROLE` accepts `INTAKE`, `CPOC`, `SRT`, `DIVDIR`, `GROUPDIR`, or `SUPERUSR`

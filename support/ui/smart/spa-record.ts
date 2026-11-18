@@ -6,8 +6,10 @@ import { SmartFinancialInformation } from './sections/financial-information';
 import { SmartNotes } from './sections/notes';
 import { SmartAdjudication } from './sections/adjudication';
 import { SmartFieldHistory } from './sections/field-history';
+import { SmartSplitSpaDialog } from './split-spa-dialog';
 
 export class SpaRecord {
+    readonly splitSpa: SmartSplitSpaDialog;
     readonly details: SmartDetails;
     readonly attachments: SmartAttachments;
     readonly review: SmartReview;
@@ -24,5 +26,6 @@ export class SpaRecord {
         this.notes = new SmartNotes(page);
         this.adjudication = new SmartAdjudication(page);
         this.fieldHistory = new SmartFieldHistory(page);
+        this.splitSpa = new SmartSplitSpaDialog(page);
     }
 }

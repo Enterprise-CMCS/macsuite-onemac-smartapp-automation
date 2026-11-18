@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-export const smartRoles = ['INTAKE', 'CPOC', 'SRT', 'DIVDIR', 'GROUPDIR', 'SUPERUSR'] as const;
+export const smartRoles = ['INTAKE', 'CPOC', 'SRT', 'SRT_SME', 'DIVDIR', 'GROUPDIR', 'SUPERUSR'] as const;
 export type SmartRole = typeof smartRoles[number];
 
 export function selectedSmartRole(): SmartRole {

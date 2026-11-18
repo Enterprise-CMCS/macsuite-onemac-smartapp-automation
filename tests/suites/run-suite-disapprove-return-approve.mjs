@@ -73,6 +73,15 @@ const steps = [
         file: 'tests/onemac/workflow/OneMAC-respond-rai.spec.ts',
         args: ['--headed'],
     },
+
+    {
+        // Adds the SRT (SME) to the Review Team with Designate as Consulting SME after the RAI response.
+        name: 'SMART: intake assigns SRT (SME)',
+        config: 'playwright.config.ts',
+        file: 'tests/smart/intake/intake-assign-sme.spec.ts',
+        args: ['--project=chromium', '--headed'],
+        role: 'INTAKE',
+    },
     {
         // Verifies the RAI response in SMART, then SRT records the second clock review.
         name: 'SMART: Med SPA - SRT validates second clock and recommends approval',
@@ -80,6 +89,13 @@ const steps = [
         file: 'tests/smart/srt/srt-recommend-rai-approval.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'SRT',
+    },
+    {
+        name: 'SMART: Med SPA - SRT (SME) recommends approval',
+        config: 'playwright.config.ts',
+        file: 'tests/smart/srt/srt-sme-recommend-approval.spec.ts',
+        args: ['--project=chromium', '--headed'],
+        role: 'SRT_SME',
     },
     {
         name: 'SMART: Med SPA - CPOC recommends approval for RAI response',

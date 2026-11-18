@@ -11,11 +11,12 @@ export class SmartReview {
     constructor(readonly page: Page) { }
 
     async assignCpoc(searchText: string, notes: string): Promise<void> {
-        await this.assignUser(searchText, notes, true);
+        await this.assignUser(searchText, notes, 'cpoc');
     }
 
-    async assignSrt(searchText: string, notes: string): Promise<void> {
-        await this.assignUser(searchText, notes, false);
+    // Searching by name can match several users. rowText picks the row to select, for example the user's email.
+    async assignSrt(searchText: string, notes: string, designation: 'none' | 'sme' = 'none', rowText: string = searchText): Promise<void> {
+        await this.assignUser(searchText, notes, designation, rowText);
     }
 
     // SRT and CPOC review progress are both set on the Submission Review Team record, opened from the Review tab.
@@ -126,8 +127,11 @@ export class SmartReview {
         const memberLink = this.page.locator('a[href*="SMART_CMCS_Submission_Review_Team__c"]')
             .filter({ hasText: new RegExp(`^${memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) });
         await expect(memberLink).toHaveCount(1);
-        await memberLink.click();
-        await this.page.waitForURL(/SMART_CMCS_Submission_Review_Team__c/);
+        // A click on this link can be swallowed while the Review tab is still rendering, so the click is retried until the record opens.
+        await expect(async () => {
+            await memberLink.click();
+            await this.page.waitForURL(/SMART_CMCS_Submission_Review_Team__c/, { timeout: 10_000 });
+        }).toPass({ timeout: 60_000 });
     }
 
     // Options from other comboboxes stay in the DOM with the same data-value, so wait for this field to expand
@@ -167,6 +171,21 @@ export class SmartReview {
         }, { timeout: 60000 }).toContain(progress);
     }
 
+    // Each row is its name cell followed by the cell texts, so two SPAs' grids can be compared with toEqual.
+    async readReviewGridRows(clock: ReviewClock = 'first'): Promise<string[][]> {
+        await this.openReviewTab();
+        const grid = this.page.locator('article')
+            .filter({ has: this.page.getByRole('heading', { name: reviewGridHeading[clock], exact: true }) });
+        const rows = grid.getByRole('row').filter({ has: this.page.getByRole('rowheader') });
+        await expect(rows.first()).toBeVisible();
+        const count = await rows.count();
+        const result: string[][] = [];
+        for (let i = 0; i < count; i++) {
+            result.push(await rows.nth(i).locator('[role=rowheader], [role=gridcell]').allInnerTexts());
+        }
+        return result;
+    }
+
     async expectFirstClockReview(): Promise<void> {
         await this.openReviewTab();
         const section = this.page.getByText('First Clock Review', { exact: true }).filter({ visible: true });
@@ -200,7 +219,7 @@ export class SmartReview {
         await tab.click();
     }
 
-    private async assignUser(searchText: string, notes: string, designateAsCpoc: boolean): Promise<void> {
+    private async assignUser(searchText: string, notes: string, designation: 'cpoc' | 'sme' | 'none', rowText: string = searchText): Promise<void> {
         const tab = this.page.getByRole('tab', { name: 'Review', exact: true });
         await expect(tab).toHaveCount(1);
         await tab.click();
@@ -210,7 +229,7 @@ export class SmartReview {
         }
         await search.fill(searchText);
         await search.press('Enter');
-        const resultRow = this.page.getByRole('row').filter({ hasText: searchText });
+        const resultRow = this.page.getByRole('row').filter({ hasText: rowText });
         await expect(resultRow).toHaveCount(1);
         const selectionCell = resultRow.getByRole('gridcell', { name: /Select Item/ });
         await expect(selectionCell).toBeVisible();
@@ -220,14 +239,14 @@ export class SmartReview {
         const dialog = this.page.getByRole('dialog', { name: 'Assignment Notes', exact: true });
         await expect(dialog).toBeVisible();
         await dialog.getByRole('textbox', { name: 'Assignment Notes', exact: true }).fill(notes);
-        if (designateAsCpoc) {
-            const cpocControl = dialog.locator('lightning-input[data-role="cpoc"]');
-            await expect(cpocControl).toHaveCount(1);
-            const cpocCheckbox = cpocControl.locator('input[type="checkbox"]');
-            if (!await cpocCheckbox.isChecked()) {
-                await cpocControl.locator('label').click();
+        if (designation !== 'none') {
+            const control = dialog.locator(`lightning-input[data-role="${designation === 'cpoc' ? 'cpoc' : 'sme'}"]`);
+            await expect(control).toHaveCount(1);
+            const checkbox = control.locator('input[type="checkbox"]');
+            if (!await checkbox.isChecked()) {
+                await control.locator('label').click();
             }
-            await expect(cpocCheckbox).toBeChecked();
+            await expect(checkbox).toBeChecked();
         }
         await dialog.getByRole('button', { name: 'Save Assignments', exact: true }).click();
         await expect(this.page.getByText('Success notification.', { exact: true }).filter({ visible: true })).toHaveCount(1);

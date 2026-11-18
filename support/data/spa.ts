@@ -29,6 +29,19 @@ export function formatSpaId(state: string, year: string, sequence: number, suffi
     return `${normalizedState}-${year}-${String(sequence).padStart(4, '0')}${suffix ? `-${suffix}` : ''}`;
 }
 
+// A Split SPA appends one character to the parent ID. Only the split flow accepts this; standard SPA IDs keep formatSpaId's rules.
+export const splitIdentifierPattern = /^[A-Z]$/;
+
+export function formatSplitSpaId(parentSpaId: string, identifier: string): string {
+    if (!/^[A-Z]{2}-\d{2}-\d{4}(?:-QA\d{2})?$/.test(parentSpaId)) {
+        throw new Error(`Cannot split ${parentSpaId}: the parent must be a standard SPA ID.`);
+    }
+    if (!splitIdentifierPattern.test(identifier)) {
+        throw new Error('Split identifier must be one character, A through Z.');
+    }
+    return `${parentSpaId}-${identifier}`;
+}
+
 // For OneMAC workflow specs that create or mutate records: no default state, so a missing SPA_STATE fails before any browser step.
 export function requiredSpaOptionsFromEnv(): SpaOptions {
     if (!process.env.SPA_STATE?.trim()) {

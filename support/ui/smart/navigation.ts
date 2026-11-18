@@ -18,4 +18,11 @@ export class SmartNavigation {
         // Allow SMART to settle before opening SPA search.
         await this.page.waitForTimeout(2_000);
     }
+
+    // SMART reopens its last tab, so leaving a record needs the Home tab rather than the app launcher.
+    async openSmartHomeTab(): Promise<void> {
+        await this.page.getByRole('link', { name: 'Home', exact: true }).click();
+        await expect(this.spaWaiversList).toBeVisible();
+        await this.page.waitForTimeout(2_000);
+    }
 }
