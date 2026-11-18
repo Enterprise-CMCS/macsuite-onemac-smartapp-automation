@@ -56,8 +56,8 @@ last day), fills SMART's labeled date input in `M/D/YYYY` format, and presses En
 to commit it before saving. Its named
 history step checks the same date and text values in the **New Value** column,
 plus the OneMAC creation row attributed to Mulesoft Integration User. Next, the
-attachment step opens Attachments and uploads the root-level
-`intake-attachment.png` through the file input in Files Uploaded in SMART,
+attachment step opens Attachments and uploads
+`support/documents/intake-attachment.png` through the file input in Files Uploaded in SMART,
 waiting for the file-specific upload-complete message in the Upload Files modal
 and clicking its Done button. The spec then checks the exact filename link in
 the Files Uploaded in SMART grid before CPOC/SRT assignment. The supplied modal
