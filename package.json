@@ -16,7 +16,7 @@
     "test:onemac-rai-response": "playwright test --headed tests/onemac/workflow/OneMAC-respond-rai.spec.ts",
     "test:onemac-status": "playwright test --headed tests/onemac/status/OneMAC-status-under-review.spec.ts",
     "test:all": "node tests/suites/run-suite-approval.mjs",
-    "test:rai": "node tests/suites/run-suite-rai.mjs",
+    "test:rai": "node tests/suites/run-suite-rai-approve.mjs",
     "test:rai-withdrawal": "node tests/suites/run-suite-rai-withdrawal.mjs",
     "test:all-suites": "node tests/suites/run-all.mjs"
   },

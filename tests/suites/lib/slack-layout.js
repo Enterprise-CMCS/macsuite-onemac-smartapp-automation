@@ -1,6 +1,7 @@
 // Loaded by playwright-slack-report's CLI (customLayout), so it must stay plain CommonJS with no imports.
 // Slack allows at most 50 blocks per message; the limits below keep the message under that.
 
+const SPA_TYPE = 'Med SPA';
 const MAX_BLOCKS = 45;
 const MAX_SECTION_CHARS = 2800;
 
@@ -64,14 +65,16 @@ function chunkLines(lines) {
 }
 
 exports.generateSuiteLayout = function generateSuiteLayout(summary) {
-    const suiteName = summary.meta?.find((m) => m.key === 'Suite')?.value ?? 'Playwright suite';
+    const suiteNames = (summary.meta?.find((m) => m.key === 'Suites')?.value ?? '').split('|').filter(Boolean);
     const runStatus = summary.runStatus ?? (summary.failed > 0 ? 'failed' : 'passed');
     const runPassed = runStatus === 'passed' && !summary.runErrors?.length;
     const tests = finalAttempts(summary.tests);
     const totals = countStatuses(tests);
+    const groups = groupByName(tests);
+    const total = suiteNames.length || groups.size;
 
     const blocks = [
-        { type: 'header', text: { type: 'plain_text', text: `${runPassed ? '✅' : '❌'} ${suiteName}`.slice(0, 150) } },
+        { type: 'header', text: { type: 'plain_text', text: `${runPassed ? '✅' : '❌'} Total ${SPA_TYPE}: ${total} ${total === 1 ? 'suite' : 'suites'}` } },
         {
             type: 'section',
             text: {
@@ -88,10 +91,12 @@ exports.generateSuiteLayout = function generateSuiteLayout(summary) {
         });
     }
 
+    const names = suiteNames.length ? suiteNames : [...groups.keys()];
     const lines = [];
-    for (const [name, groupTests] of groupByName(tests)) {
+    for (const name of names) {
+        const groupTests = groups.get(name) ?? [];
         const counts = countStatuses(groupTests);
-        const icon = counts.failed > 0 ? '❌' : '✅';
+        const icon = counts.failed > 0 || groupTests.length === 0 ? '❌' : '✅';
         lines.push(`${icon} *${escape(name)}*\nPassed: ${counts.passed}   Failed: ${counts.failed}   Skipped: ${counts.skipped}   Flaky: ${counts.flaky}`);
         for (const test of groupTests) {
             if (test.status === 'skipped' || (test.status === 'passed' && !(test.retry > 0))) continue;

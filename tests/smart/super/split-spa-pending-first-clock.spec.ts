@@ -7,7 +7,7 @@ test.use({ smartRole: 'SUPERUSR' });
 const splitIdentifier = 'A';
 const splitReason = 'SRT reviews documents and CPOC reviews financials';
 
-test('Super User splits a SPA into a child SPA that clones the parent', async ({ navigation, page, recordSearch, spaId, spaStore }) => {
+test('Super User splits a Pending - First Clock Med SPA', async ({ navigation, page, recordSearch, spaId, spaStore }) => {
     const childSpaId = `${spaId}-${splitIdentifier}`;
     const parent = new SpaRecord(page);
 

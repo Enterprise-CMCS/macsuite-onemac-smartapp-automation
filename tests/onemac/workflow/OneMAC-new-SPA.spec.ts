@@ -40,14 +40,17 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     await expect(page.getByText('Package submitted')).toBeVisible();
     await records.markSubmitted(spaId);
 
-    await page.getByRole('link', { name: 'Home', exact: true }).first().click();
-    await page.getByRole('link', { name: 'Dashboard', exact: true }).first().click();
-    await expect(page).toHaveURL(/\/dashboard$/);
+    const searchBox = page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
+    // Right after submit, the dashboard route can render "Page not found", so reopen it until the search box shows.
+    await expect(async () => {
+        await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+        await page.getByRole('link', { name: 'Dashboard', exact: true }).first().click();
+        await expect(page).toHaveURL(/\/dashboard$/);
+        await expect(searchBox).toBeVisible({ timeout: 15_000 });
+    }).toPass({ timeout: 90_000, intervals: [5_000] });
     // A new package needs about 10 seconds before it can be opened from the dashboard.
     await page.waitForTimeout(10_000);
     // The dashboard is search-indexed, so a new package can lag behind the submit banner.
-    const searchBox = page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
-    await expect(searchBox).toBeVisible({ timeout: 30_000 });
     const spaLink = page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
     await expect(async () => {
         await searchBox.fill(spaId);

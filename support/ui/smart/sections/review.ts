@@ -23,7 +23,7 @@ export class SmartReview {
     // The SPA ID link on that record is the only way back to the main SPA page, so it is clicked after the save.
     // Disapproving Groups only appears once Recommending Disapproval is selected, so it is set after Review Progress.
     async setReviewTeamProgress(memberName: string, progress: string, spaId: string, clock: ReviewClock, disapprovingGroup?: string): Promise<void> {
-        await this.openReviewTeamRecord(memberName);
+        await this.openReviewTeamRecord(memberName, clock);
         // Review Progress is saved from its own edit control in Information; the Path bar only shows the stage.
         await this.page.getByRole('button', { name: 'Edit Review Progress', exact: true }).click();
         const progressField = this.page.getByRole('combobox', { name: 'Review Progress', exact: true });
@@ -121,10 +121,14 @@ export class SmartReview {
         await this.page.waitForURL(/SMART_CMCS_SPA_Waiver__c/);
     }
 
-    private async openReviewTeamRecord(memberName: string): Promise<void> {
+    private async openReviewTeamRecord(memberName: string, clock?: ReviewClock): Promise<void> {
         await this.openReviewTab();
         // The same member name also appears in the RAI Questions grid, so match only the Review Team record link.
-        const memberLink = this.page.locator('a[href*="SMART_CMCS_Submission_Review_Team__c"]')
+        // A split SPA also lists the second-clock member in Second Clock Intake, so the second clock search stays inside its grid.
+        const scope: Page | Locator = clock === 'second'
+            ? this.page.locator('article').filter({ has: this.page.getByRole('heading', { name: reviewGridHeading.second, exact: true }) })
+            : this.page;
+        const memberLink = scope.locator('a[href*="SMART_CMCS_Submission_Review_Team__c"]')
             .filter({ hasText: new RegExp(`^${memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) });
         await expect(memberLink).toHaveCount(1);
         // A click on this link can be swallowed while the Review tab is still rendering, so the click is retried until the record opens.
@@ -203,7 +207,12 @@ export class SmartReview {
     // The checkbox is saved from the page-level Save footer, not from the Intake field itself.
     async confirmCpocSrtAssignment(): Promise<void> {
         await this.openReviewTab();
-        await this.page.getByRole('button', { name: 'Edit CPOC/SRT Assignment Confirmed', exact: true }).click();
+        const edit = this.page.getByRole('button', { name: 'Edit CPOC/SRT Assignment Confirmed', exact: true });
+        // Once confirmed, the Edit control is gone, so a rerun on the same SPA skips the confirmation.
+        if (await edit.count() === 0) {
+            return;
+        }
+        await edit.click();
         const confirmed = this.page.getByRole('checkbox', { name: 'CPOC/SRT Assignment Confirmed', exact: true });
         await expect(confirmed).toHaveCount(1);
         await confirmed.check();

@@ -30,6 +30,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     trace: 'on',
+    screenshot: 'only-on-failure',
   },
 
   /* Configure projects for major browsers */
@@ -54,11 +55,17 @@ export default defineConfig({
     //   use: { ...devices['iPhone 12'] },
     // },
 
+    {
+      name: 'msedge',
+      use: {
+        ...devices['Desktop Edge'],
+        channel: 'msedge',
+        viewport: { width: 1820, height: 980 },
+        trace: 'off',
+      },
+    },
+
     /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
     // {
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },

@@ -154,7 +154,8 @@ test.describe('persistent SPA records', () => {
         await expect(firstRun.latestSubmitted()).rejects.toThrow('No confirmed SPA');
         await firstRun.markSubmitted('CA-26-0037-QA01');
         const nextRun = createSpaRecordStore(environment, { ...seed, startSequence: 1 }, directory);
-        expect(await nextRun.latestSubmitted()).toMatchObject({ spaId: 'CA-26-0037-QA01', onemacStatus: 'submitted', smartStatus: null, environment: 'https://mako-dev.cms.gov' });
+        expect(await nextRun.latestSubmitted()).toMatchObject({ spaId: 'CA-26-0037-QA01', onemacStatus: 'submitted', smartStatus: 'intake_needed', environment: 'https://mako-dev.cms.gov' });
+        expect((await nextRun.latestIntakeNeededWorkflow()).map((record) => record.spaId)).toEqual(['CA-26-0037-QA01']);
         expect(await nextRun.reserve()).toBe('CA-26-0037-QA02');
         expect((await nextRun.latestSubmitted()).spaId).toBe('CA-26-0037-QA01');
     });
@@ -337,7 +338,7 @@ test('a split is allowed from Intake Needed, refused once the SPA reaches concur
     await store.markSubmitted(spaId);
     await expect(store.recordSplit(spaId, 'A', '  ')).rejects.toThrow('reason is required');
     const splitId = await store.recordSplit(spaId, 'A', 'split at intake');
-    expect(await store.find(splitId)).toMatchObject({ smartStatus: null });
+    expect(await store.find(splitId)).toMatchObject({ smartStatus: 'intake_needed' });
     await expect(store.recordSplit(spaId, 'A', 'again')).rejects.toThrow('already exists');
     await expect(store.recordSplit(splitId, 'B', 'nested')).rejects.toThrow('standard SPA');
 
@@ -345,6 +346,23 @@ test('a split is allowed from Intake Needed, refused once the SPA reaches concur
     await store.markReviewCompleted(spaId, 'srt');
     await store.markReviewCompleted(spaId, 'cpoc');
     await expect(store.recordSplit(spaId, 'B', 'too late')).rejects.toThrow('from pending_concurrence');
+});
+
+test('a Second Clock split is tracked per role, so SRT and CPOC each finish the parent and the child', async () => {
+    const store = createSpaRecordStore(environment, seed, directory);
+    const parentId = await store.reserve();
+    await store.markSubmitted(parentId);
+    await store.markPendingFirstClock(parentId);
+    await store.markPendingRai(parentId, { issuedDate: '01/02/2027', expiresDate: '03/02/2027' });
+    await store.markPendingSecondClock(parentId);
+    const splitId = await store.recordSplit(parentId, 'A', 'SRT reviews documents and CPOC reviews financials');
+    expect(await store.find(splitId)).toMatchObject({ smartStatus: 'pending_second_clock' });
+    expect((await store.latestSecondClockWorkflow('srt')).map((record) => record.spaId)).toEqual([parentId, splitId]);
+
+    await store.markRaiReviewCompleted(parentId, 'srt');
+    await store.markRaiReviewCompleted(splitId, 'srt');
+    await expect(store.latestSecondClockWorkflow('srt')).rejects.toThrow('No SPA');
+    expect((await store.latestSecondClockWorkflow('cpoc')).map((record) => record.spaId)).toEqual([parentId, splitId]);
 });
 
 test('an interrupted reservation is never reused or handed off', async () => {

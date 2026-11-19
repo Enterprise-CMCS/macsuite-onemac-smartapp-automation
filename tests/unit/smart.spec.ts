@@ -163,6 +163,7 @@ for (const correctNewValue of [true, false]) {
             typeSubtype: 'Administrative - Authority Change, Electronic Claims, Policy Update',
             alerts: { 'Alert 1 Day': '45', 'Alert 2 Day': '60', 'Alert 3 Day': '75' },
             intakeCompleteDate: '01/23/2027',
+            expectOnemacCreated: true,
         });
         if (correctNewValue) {
             await verification;

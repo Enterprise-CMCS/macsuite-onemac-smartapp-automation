@@ -4,10 +4,10 @@ import path from 'node:path';
 import { formatSpaId, formatSplitSpaId, splitIdentifierPattern, SpaOptions } from './spa';
 
 // OneMAC package status. Under Review is a check on the record, not what the tests drive from.
-export type OnemacStatus = 'reserved' | 'submitted' | 'under_review';
+export type OnemacStatus = 'reserved' | 'submitted' | 'under_review' | 'approved';
 
 // SMART workflow stage. The tests use it to pick the record they run against. Null until intake sets it.
-export type SmartStatus = 'pending_first_clock' | 'pending_rai' | 'pending_second_clock' | 'pending_concurrence' | 'pending_approval' | 'approved' | 'pending_disapproval' | 'disapproved';
+export type SmartStatus = 'intake_needed' | 'pending_first_clock' | 'pending_rai' | 'pending_second_clock' | 'pending_concurrence' | 'pending_approval' | 'approved' | 'pending_disapproval' | 'disapproved';
 
 // Reviewer roles that must both finish during Pending - First Clock before the SPA moves to Pending - Concurrence.
 export type ReviewRole = 'srt' | 'cpoc';
@@ -39,8 +39,8 @@ export type SpaSplit = Omit<SpaRecord, 'splits'> & {
     splitAt: string;
 };
 
-// SMART stages a split can be created in. Intake Needed is smartStatus null, so it is handled separately.
-const splittableSmartStatuses: SmartStatus[] = ['pending_first_clock', 'pending_rai', 'pending_second_clock'];
+// SMART stages a split can be created in. Older records may still hold null, which also means Intake Needed.
+const splittableSmartStatuses: SmartStatus[] = ['intake_needed', 'pending_first_clock', 'pending_rai', 'pending_second_clock'];
 
 // Records written before the split kept one `status` field, which held the OneMAC status.
 type StoredRecord = Omit<SpaRecord, 'onemacStatus' | 'smartStatus'> & {
@@ -49,8 +49,8 @@ type StoredRecord = Omit<SpaRecord, 'onemacStatus' | 'smartStatus'> & {
     smartStatus?: SmartStatus | null;
 };
 
-const onemacStatuses: OnemacStatus[] = ['reserved', 'submitted', 'under_review'];
-const smartStatuses: SmartStatus[] = ['pending_first_clock', 'pending_rai', 'pending_second_clock', 'pending_concurrence', 'pending_approval', 'approved', 'pending_disapproval', 'disapproved'];
+const onemacStatuses: OnemacStatus[] = ['reserved', 'submitted', 'under_review', 'approved'];
+const smartStatuses: SmartStatus[] = ['intake_needed', 'pending_first_clock', 'pending_rai', 'pending_second_clock', 'pending_concurrence', 'pending_approval', 'approved', 'pending_disapproval', 'disapproved'];
 
 // Values captured from the OneMAC package details page for verification in SMART.
 export type SpaSubmissionDetails = {
@@ -205,13 +205,18 @@ export function createSpaRecordStore(
     }
 
     // The newest top-level SPA (or split) in a status that is still waiting, parent first, then its splits still waiting.
-    // With a role, "waiting" also means that role has not finished its review yet; director steps pass no role and rely on the status change.
-    async function latestWorkflowInSmartStatus(status: SmartStatus, role?: ReviewRole): Promise<Array<SpaRecord & { environment: string; state: string; year: string }>> {
+    // With a role, "waiting" also means that role has not finished the review tracked by `finished`; director steps pass no role and rely on the status change.
+    async function latestWorkflowInSmartStatus(
+        statuses: SmartStatus | SmartStatus[],
+        role?: ReviewRole,
+        finished: 'reviewsCompleted' | 'raiReviewsCompleted' = 'reviewsCompleted',
+    ): Promise<Array<SpaRecord & { environment: string; state: string; year: string }>> {
         const data = await read();
-        const waiting = (record: SpaRecord | SpaSplit) => record.smartStatus === status && (role === undefined || !record.reviewsCompleted?.[role]);
+        const wanted = Array.isArray(statuses) ? statuses : [statuses];
+        const waiting = (record: SpaRecord | SpaSplit) => wanted.includes(record.smartStatus as SmartStatus) && (role === undefined || !record[finished]?.[role]);
         const parent = [...data.records].reverse().find((candidate) => waiting(candidate) || (candidate.splits ?? []).some(waiting));
         if (!parent) {
-            throw new Error(`No SPA in ${status}${role ? ` waiting for ${role}` : ''} in ${environment}, ${state}-${options.year}. Run the earlier suite steps first.`);
+            throw new Error(`No SPA in ${wanted.join(' or ')}${role ? ` waiting for ${role}` : ''} in ${environment}, ${state}-${options.year}. Run the earlier suite steps first.`);
         }
         const members = [...(waiting(parent) ? [parent] : []), ...(parent.splits ?? []).filter(waiting)];
         return members.map((record) => ({ ...record, environment, state, year: options.year }));
@@ -285,6 +290,9 @@ export function createSpaRecordStore(
                 if (record.onemacStatus !== 'reserved') return null;
                 record.onemacStatus = 'submitted';
                 record.submittedAt = new Date().toISOString();
+                // OneMAC creation is the start of the SMART workflow, so the SPA waits for intake.
+                record.smartStatus = 'intake_needed';
+                record.smartStatusAt = record.submittedAt;
                 data.latestSubmittedSpaId = spaId;
                 return record.submittedAt;
             });
@@ -304,7 +312,7 @@ export function createSpaRecordStore(
         // or to Pending - Disapproval when either reviewer recommended disapproval (disapproval skips concurrence).
         markReviewCompleted: (spaId: string, role: ReviewRole, recommendation: ReviewRecommendation = 'approve') => update((data) => {
             const record = findRecord(data, spaId);
-            if (!record || record.smartStatus === null) {
+            if (!record || record.smartStatus === null || record.smartStatus === 'intake_needed') {
                 throw new Error(`Cannot record ${role.toUpperCase()} completion for an SPA not in Pending - First Clock: ${spaId}`);
             }
             if (record.smartStatus !== 'pending_first_clock') return;
@@ -357,7 +365,7 @@ export function createSpaRecordStore(
         // SRT and CPOC must finish again, so their completions and recommendations are cleared.
         markReturnedToReview: (spaId: string) => update((data) => {
             const record = findRecord(data, spaId);
-            if (!record || record.smartStatus === null) throw new Error(`Cannot return ${spaId} to review: no SMART status recorded.`);
+            if (!record || record.smartStatus === null || record.smartStatus === 'intake_needed') throw new Error(`Cannot return ${spaId} to review: no SMART status recorded.`);
             if (record.smartStatus === 'pending_first_clock') return;
             if (record.smartStatus !== 'pending_concurrence' && record.smartStatus !== 'pending_disapproval' && record.smartStatus !== 'pending_approval') {
                 throw new Error(`Cannot return ${spaId} to review from ${record.smartStatus}.`);
@@ -376,7 +384,7 @@ export function createSpaRecordStore(
             record.underReviewAt = new Date().toISOString();
         }),
         // Called after the OneMAC status check sees the status OneMAC shows for this SPA.
-        markOnemacStatus: (spaId: string, status: 'submitted' | 'under_review') => update((data) => {
+        markOnemacStatus: (spaId: string, status: 'submitted' | 'under_review' | 'approved') => update((data) => {
             const record = findRecord(data, spaId);
             if (!record || record.onemacStatus === 'reserved') throw new Error(`Cannot set OneMAC status for an unsubmitted SPA ID: ${spaId}`);
             if (record.onemacStatus === status) return;
@@ -428,6 +436,8 @@ export function createSpaRecordStore(
         // The Pending - First Clock parent and its splits, parent first. Pass a role to skip SPAs that role already finished.
         latestPendingFirstClockWorkflow: (role?: ReviewRole) => latestWorkflowInSmartStatus('pending_first_clock', role),
         latestSubmittedWorkflow,
+        // The Intake Needed parent and its splits, parent first. Intake runs on each of these before SRT and CPOC.
+        latestIntakeNeededWorkflow: () => latestWorkflowInSmartStatus('intake_needed'),
         // Concurrence and approval steps run on whatever is in that status; the director's action moves each SPA out of it.
         latestPendingConcurrenceWorkflow: () => latestWorkflowInSmartStatus('pending_concurrence'),
         latestPendingApprovalWorkflow: () => latestWorkflowInSmartStatus('pending_approval'),
@@ -435,6 +445,9 @@ export function createSpaRecordStore(
         latestPendingRai: () => latestInSmartStatus('pending_rai'),
         // The newest SPA that OneMAC has received the formal RAI response for; SMART moves it to Pending - Second Clock.
         latestPendingSecondClock: () => latestInSmartStatus('pending_second_clock'),
+        // The Second Clock parent and its splits, parent first, including ones still at Pending RAI until SMART shows the second clock.
+        // Pass a role to skip SPAs that role already finished its second clock review for.
+        latestSecondClockWorkflow: (role?: ReviewRole) => latestWorkflowInSmartStatus(['pending_rai', 'pending_second_clock'], role, 'raiReviewsCompleted'),
         // The newest SPA SRT and CPOC have finished; the Group Director concurs next.
         latestPendingConcurrence: () => latestInSmartStatus('pending_concurrence'),
         // The newest SPA the Group Director has concurred; the Division Director approves next.

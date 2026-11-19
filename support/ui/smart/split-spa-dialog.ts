@@ -26,7 +26,11 @@ export class SmartSplitSpaDialog {
 
     async createSplit(identifier: string, reason: string): Promise<void> {
         await this.splitIdentifier.fill(identifier);
+        // Changing the identifier re-renders the form; wait for the new ID before entering the reason so it is not lost.
+        const originalId = await this.originalSpaId.inputValue();
+        await expect(this.page.getByText(`${originalId}-${identifier}`, { exact: true }).first()).toBeVisible();
         await this.splitReason.fill(reason);
+        await expect(this.splitReason).toHaveValue(reason);
         await this.createButton.click();
     }
 }

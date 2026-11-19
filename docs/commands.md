@@ -17,7 +17,7 @@ matches, the spec stops with `No SPA in <status> for <env>, <state>-<year>`.
 | List SMART tests | `npm run test:list` |
 | Show latest confirmed SPA | `npm run spa:current` |
 | Run SMART test as a role | `SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed` |
-| Run SMART test on a chosen stored SPA | `SPA_ID=CA-26-0086-QA13 SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed` |
+| Run SMART test on a chosen stored SPA (runs only that SPA) | `SPA_ID=CA-26-0086-QA13 SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed` |
 | Run SMART tests via npm script | `SF_ROLE=CPOC npm run test:smart -- intake.spec.ts --headed` |
 | Create a new OneMAC SPA (live: submits a record) | `SPA_STATE=CA npx playwright test --project=chromium --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts` |
 | Run OneMAC new-SPA workflow (live: submits a record) | `SPA_STATE=CA npm run test:onemac` |
@@ -25,10 +25,13 @@ matches, the spec stops with `No SPA in <status> for <env>, <state>-<year>`.
 | Run OneMAC "under review" status check only | `SPA_STATE=CA npm run test:onemac-status` |
 | Run approval suite (live: starts by creating a SPA) | `SPA_STATE=CA npm run test:all` |
 | Run RAI suite (live: starts by creating a SPA and submits an RAI response) | `SPA_STATE=CA npm run test:rai` |
+| Run Intake Needed split suite (live: creates a SPA, splits it before intake, then runs intake and approval) | `SPA_STATE=VA node tests/suites/run-suite-split-intake-approval.mjs` |
 
 For either suite, `SPA_STATE` set on the command line applies to every step, so the whole run uses one state. Change
 `CA` to the state you want. The variable must come before `npm run`. The RAI suite creates its own SPA in that state
 on its first step, so it doesn't need an existing record.
+
+The Intake Needed split suite has no npm script. It creates a SPA, has the Super User split it while it is still at Intake Needed, then runs intake and the approval steps on the parent and child. Intake and the approval steps run over every waiting SPA in the newest workflow. Set `SPA_STATE` as above. To run only the intake loop on one SPA, use `SPA_ID` with the intake command below.
 
 ## Run each test individually
 
