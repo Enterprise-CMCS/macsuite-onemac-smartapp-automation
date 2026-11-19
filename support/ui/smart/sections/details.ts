@@ -47,6 +47,15 @@ export class SmartDetails {
         await expect(row).toContainText(value);
     }
 
+    // Returns the value shown in a Details row, skipping the label and the row's "Edit <label>" control text.
+    async readRowValue(label: string): Promise<string> {
+        const row = this.page.getByRole('listitem')
+            .filter({ has: this.page.getByText(label, { exact: true }) });
+        await expect(row).toHaveCount(1);
+        const lines = (await row.innerText()).split('\n').map((line) => line.trim()).filter(Boolean);
+        return lines.find((line) => line !== label && !line.startsWith('Edit ')) ?? '';
+    }
+
     async updateSubmissionSummary(subject: string, description: string, approvedEffectiveDate: string): Promise<void> {
         const tab = this.page.getByRole('tab', { name: 'Details', exact: true });
         await expect(tab).toHaveCount(1);

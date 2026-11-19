@@ -10,6 +10,8 @@ export interface IntakeHistoryExpectations {
     alerts: Record<string, string>;
     /** Formatted as MM/DD/YYYY. */
     intakeCompleteDate: string;
+    /** False for a split SPA, whose field history starts new and does not carry the parent's OneMAC "Created." row. */
+    expectOnemacCreated: boolean;
 }
 
 export class SmartFieldHistory {
@@ -69,14 +71,16 @@ export class SmartFieldHistory {
         await expect(rowFor('Intake Complete')).toBeVisible();
         await expectNewValue('Intake Complete Date', expected.intakeCompleteDate);
 
-        // "Created." is the oldest entry, so it sits on the last page of the history grid.
-        const createdRow = historyGrid.getByRole('row').filter({
-            has: this.page.getByRole('gridcell', { name: 'Created.', exact: true }),
-        });
-        if (await createdRow.count() === 0) {
-            await this.page.getByRole('button', { name: 'Next', exact: true }).click();
+        if (expected.expectOnemacCreated) {
+            // "Created." is the oldest entry, so it sits on the last page of the history grid.
+            const createdRow = historyGrid.getByRole('row').filter({
+                has: this.page.getByRole('gridcell', { name: 'Created.', exact: true }),
+            });
+            if (await createdRow.count() === 0) {
+                await this.page.getByRole('button', { name: 'Next', exact: true }).click();
+            }
+            await expect(createdRow).toHaveCount(1);
+            await expect(createdRow.getByRole('gridcell', { name: 'Mulesoft Integration User', exact: true })).toBeVisible();
         }
-        await expect(createdRow).toHaveCount(1);
-        await expect(createdRow.getByRole('gridcell', { name: 'Mulesoft Integration User', exact: true })).toBeVisible();
     }
 }

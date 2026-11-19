@@ -18,9 +18,9 @@ const steps = [
         role: 'INTAKE',
     },
     {
-        name: 'SMART: Med SPA - Super User splits SPA',
+        name: 'SMART: Med SPA - Super User splits SPA at Pending - First Clock',
         config: 'playwright.config.ts',
-        file: 'tests/smart/super/split-spa.spec.ts',
+        file: 'tests/smart/super/split-spa-pending-first-clock.spec.ts',
         args: ['--project=chromium', '--headed'],
         role: 'SUPERUSR',
     },

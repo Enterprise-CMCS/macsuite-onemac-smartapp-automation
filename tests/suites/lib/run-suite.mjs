@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +13,7 @@ const slackLayoutFile = fileURLToPath(new URL('./slack-layout.js', import.meta.u
 const blobCount = () => (existsSync(blobDir) ? readdirSync(blobDir).filter((f) => f.endsWith('.zip')).length : 0);
 
 // Sends one Slack message for the whole suite. The webhook URL is written to a temporary config and removed afterward.
-function sendSlackSummary(suiteName, runStatus) {
+function sendSlackSummary(suiteName, runStatus, suiteNames) {
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
     if (!webhookUrl) {
         console.warn('\nSLACK_WEBHOOK_URL is not set. Skipping the Slack summary.');
@@ -28,7 +29,11 @@ function sendSlackSummary(suiteName, runStatus) {
         sendUsingWebhook: { webhookUrl },
         showInThread: false,
         disableUnfurl: true,
-        meta: [{ key: 'Suite', value: suiteName }],
+        meta: [
+            { key: 'Suite', value: suiteName },
+            // Suite names are passed in run order so the Slack layout lists every suite, even one that stopped before its first test.
+            { key: 'Suites', value: suiteNames.join('|') },
+        ],
         customLayout: { source: slackLayoutFile, functionName: 'generateSuiteLayout' },
     };
     try {
@@ -169,7 +174,7 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
         writeFileSync(jsonFile, JSON.stringify(combineReports(parts)));
     }
     const runStatus = failedSuites.length || mergeFailed || htmlMerge.status !== 0 ? 'failed' : 'passed';
-    sendSlackSummary(title, runStatus);
+    sendSlackSummary(title, runStatus, keys.map((k) => k.name));
 
     if (failedSuites.length) {
         console.error(`\nFailed suites: ${failedSuites.join(', ')}`);

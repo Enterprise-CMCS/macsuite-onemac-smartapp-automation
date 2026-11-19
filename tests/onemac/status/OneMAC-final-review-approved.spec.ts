@@ -12,13 +12,15 @@ const dateText = /[A-Z][a-z]+ \d{1,2}, \d{4}/;
 
 // Checks the newest approved parent and each approved split in the store, parent first, so one run covers both SPAs.
 test('OneMAC approved SPAs show final disposition, effective date, and CPOC', async ({ page }, testInfo) => {
-    const records = await createSpaRecordStore(appUrls.onemac, spaOptionsFromEnv()).latestApprovedWorkflow();
+    const store = createSpaRecordStore(appUrls.onemac, spaOptionsFromEnv());
+    const records = await store.latestApprovedWorkflow();
     await eachSpa(records.map((record) => record.spaId), (spaId) => `OneMAC shows ${spaId} as approved`, async (spaId) => {
         await new OneMacDashboard(page).expectPackageStatus(spaId, 'Approved', testInfo);
         const details = new OneMacPackageDetails(page);
         await details.expectDetail('Final Disposition Date', dateText);
         await details.expectTermShown('Approved Effective Date');
         await details.expectDetail('CPOC', cpocName);
+        await store.markOnemacStatus(spaId, 'approved');
     });
 });
 
