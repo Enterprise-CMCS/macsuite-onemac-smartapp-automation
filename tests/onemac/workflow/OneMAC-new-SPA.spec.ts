@@ -48,8 +48,6 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
         await expect(page).toHaveURL(/\/dashboard$/);
         await expect(searchBox).toBeVisible({ timeout: 15_000 });
     }).toPass({ timeout: 90_000, intervals: [5_000] });
-    // A new package needs about 10 seconds before it can be opened from the dashboard.
-    await page.waitForTimeout(10_000);
     // The dashboard is search-indexed, so a new package can lag behind the submit banner.
     const spaLink = page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
     await expect(async () => {
@@ -57,9 +55,11 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
         await searchBox.press('Enter');
         await expect(spaLink).toBeVisible({ timeout: 10_000 });
     }).toPass({ timeout: 120_000, intervals: [5_000] });
-    await spaLink.click();
-    // The details page can take a while to render after the click.
-    await expect(page).toHaveURL(new RegExp(`/details/Medicaid%20SPA/${spaId}$`), { timeout: 60_000 });
+    // A click can land while the search table is still re-rendering and not navigate, so retry the click until the details page opens.
+    await expect(async () => {
+        await spaLink.click();
+        await expect(page).toHaveURL(new RegExp(`/details/Medicaid%20SPA/${spaId}$`), { timeout: 10_000 });
+    }).toPass({ timeout: 90_000, intervals: [5_000] });
 
     const packageDetails = page.locator('#package_details');
     const detailValue = (label: string) => packageDetails

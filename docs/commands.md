@@ -20,12 +20,18 @@ matches, the spec stops with `No SPA in <status> for <env>, <state>-<year>`.
 | Run SMART test on a chosen stored SPA (runs only that SPA) | `SPA_ID=CA-26-0086-QA13 SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed` |
 | Run SMART tests via npm script | `SF_ROLE=CPOC npm run test:smart -- intake.spec.ts --headed` |
 | Create a new OneMAC SPA (live: submits a record) | `SPA_STATE=CA npx playwright test --project=chromium --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts` |
+| Create a new OneMAC SPA on Edge or Firefox (live: submits a record) | `SPA_STATE=VA npx playwright test --project=msedge --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts` (use `--project=firefox` for Firefox) |
+| Create a new OneMAC SPA in Chrome, Edge, and Firefox in parallel (live: submits three records, one per browser; one merged report and one Slack message) | `npm run test:browsers` |
 | Run OneMAC new-SPA workflow (live: submits a record) | `SPA_STATE=CA npm run test:onemac` |
 | Run OneMAC RAI response workflow (live: starts the review clock) | `SPA_STATE=CO npm run test:onemac-rai-response` |
 | Run OneMAC "under review" status check only | `SPA_STATE=CA npm run test:onemac-status` |
 | Run approval suite (live: starts by creating a SPA) | `SPA_STATE=CA npm run test:all` |
 | Run RAI suite (live: starts by creating a SPA and submits an RAI response) | `SPA_STATE=CA npm run test:rai` |
 | Run Intake Needed split suite (live: creates a SPA, splits it before intake, then runs intake and approval) | `SPA_STATE=VA node tests/suites/run-suite-split-intake-approval.mjs` |
+
+`npm run test:browsers` runs the create-SPA test in three browsers at once, with a fixed state per browser: Chrome uses
+`CA`, Edge uses `VA`, and Firefox uses `CO`. The merged HTML report is written to `playwright-report-parallel/index.html`.
+Parallel runs need different states, so keep those assignments when you change them.
 
 For either suite, `SPA_STATE` set on the command line applies to every step, so the whole run uses one state. Change
 `CA` to the state you want. The variable must come before `npm run`. The RAI suite creates its own SPA in that state
