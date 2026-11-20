@@ -25,7 +25,7 @@ export default defineConfig({
     // JUnit XML is parsed by TestRail CLI (trcli parse_junit).
     ['junit', { embedAnnotationsAsProperties: true, outputFile: './test-results/junit-report.xml' }],
     // Set by tests/suites/lib/run-suite.mjs so each step's results can be merged into one HTML report.
-    ...(process.env.SUITE_BLOB ? [['blob', { outputDir: './blob-report' }] as const] : []),
+    ...(process.env.SUITE_BLOB ? [['blob', { outputDir: process.env.BLOB_REPORT_DIR ?? './blob-report' }] as const] : []),
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -60,6 +60,15 @@ export default defineConfig({
       use: {
         ...devices['Desktop Edge'],
         channel: 'msedge',
+        viewport: { width: 1820, height: 980 },
+        trace: 'off',
+      },
+    },
+
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
         viewport: { width: 1820, height: 980 },
         trace: 'off',
       },

@@ -18,14 +18,15 @@
     "test:all": "node tests/suites/run-suite-approval.mjs",
     "test:rai": "node tests/suites/run-suite-rai-approve.mjs",
     "test:rai-withdrawal": "node tests/suites/run-suite-rai-withdrawal.mjs",
-    "test:all-suites": "node tests/suites/run-all.mjs"
+    "test:all-suites": "node tests/suites/run-all.mjs",
+    "test:browsers": "node tests/suites/run-browsers.mjs tests/onemac/workflow/OneMAC-new-SPA.spec.ts \"Create new Med SPA\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@playwright/test": "^1.64.1",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.5",
     "dotenv": "^18.0.8",
     "playwright-slack-report": "^1.1.118",
