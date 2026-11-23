@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { test } from '../../../support/fixtures/onemac.fixture';
 import { appUrls } from '../../../support/config/urls';
-import { requiredSpaOptionsFromEnv } from '../../../support/data/spa';
+import { requiredSpaOptionsFromEnv, SpaOptions } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
 import { OneMacRespondToRai } from '../../../support/ui/onemac/respond-to-rai';
 import { OneMacPackageDetails } from '../../../support/ui/onemac/package-details';
@@ -13,9 +13,9 @@ import { raiResponseFiles } from '../../../support/data/onemac-attachments';
 // RAI_SPA_ID targets a specific RAI-issued SPA; without it, the newest Pending RAI SPA is used.
 // RAI_LETTER_PATH is optional and defaults to the file in support/documents/upload named by raiResponseFiles.letter.
 let targetSpaId: string;
-// Evaluated at file load so a missing SPA_STATE fails before the fixture logs in.
-const spaOptions = requiredSpaOptionsFromEnv();
+let spaOptions: SpaOptions;
 test.beforeAll(async () => {
+    spaOptions = requiredSpaOptionsFromEnv();
     targetSpaId = process.env.RAI_SPA_ID ?? (await createSpaRecordStore(appUrls.onemac, spaOptions).latestPendingRai()).spaId;
 });
 

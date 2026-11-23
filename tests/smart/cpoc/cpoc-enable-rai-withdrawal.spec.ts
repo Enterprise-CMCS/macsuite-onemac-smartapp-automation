@@ -8,9 +8,8 @@ import { createSpaRecordStore } from '../../../support/data/spa-store';
 // Without it, the newest Pending - RAI SPA for SPA_STATE is used. SPA_STATE is required (no default).
 // The store is moved to Pending - Second Clock during the run once SMART shows that status.
 let targetSpaId: string;
-// Evaluated at file load so a missing SPA_STATE fails before the fixture logs in.
-const spaOptions = requiredSpaOptionsFromEnv();
 test.beforeAll(async () => {
+    const spaOptions = requiredSpaOptionsFromEnv();
     targetSpaId = process.env.RAI_WITHDRAWAL_SPA_ID ?? (await createSpaRecordStore(appUrls.onemac, spaOptions).latestPendingRai()).spaId;
 });
 test.use({ spaId: async ({ }, use) => use(targetSpaId) });

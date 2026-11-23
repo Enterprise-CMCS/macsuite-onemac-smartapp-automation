@@ -10,12 +10,9 @@ import { onemacAttachments } from '../../../support/data/onemac-attachments';
 
 const uploadFile = (name: string) => path.resolve(__dirname, '../../../support/documents/upload', name);
 const additionalInformationText = 'this is a test';
-// Evaluated at file load so a missing SPA_STATE fails before the fixture logs in.
-const spaOptions = requiredSpaOptionsFromEnv();
-
-
 test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     const testStartedAt = new Date();
+    const spaOptions = requiredSpaOptionsFromEnv();
     const records = createSpaRecordStore(appUrls.onemac, spaOptions);
     await page.getByRole('link', { name: 'New Submission' }).click();
     await page.getByRole('link', { name: 'State Plan Amendment (SPA)' }).click();
