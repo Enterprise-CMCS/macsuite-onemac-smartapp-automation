@@ -301,7 +301,7 @@ for (const spaId of ['CA-26-0037', 'MD-27-0012']) {
                 <div aria-hidden="true">${spaId} SPA or Waiver</div>
                 <span id="result-b-id">${spaId}</span><span id="result-b-kind">SPA or Waiver</span>
             </div>
-            <table role="grid" hidden><tbody><tr><th scope="row"><a data-refid="recordId" title="${spaId}" href="#record">${spaId}</a></th></tr></tbody></table>
+            <table role="grid" hidden><thead><tr><th role="columnheader">Initial Submission Date</th></tr></thead><tbody><tr><th scope="row"><a data-refid="recordId" title="${spaId}" href="#record">${spaId}</a></th></tr></tbody></table>
             <h1></h1>
             <script>
             document.querySelector('input').addEventListener('input', () => {

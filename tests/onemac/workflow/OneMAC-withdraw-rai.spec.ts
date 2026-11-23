@@ -11,10 +11,9 @@ import { raiResponseFiles } from '../../../support/data/onemac-attachments';
 // Required: SPA_STATE (no default). SPA_STATE must match the state of the SPA.
 // RAI_WITHDRAWAL_SPA_ID targets a specific SPA; without it, the newest Pending - Second Clock SPA for SPA_STATE is used.
 let targetSpaId: string;
-// Evaluated at file load so a missing SPA_STATE fails before the fixture logs in.
-const spaOptions = requiredSpaOptionsFromEnv();
-const store = createSpaRecordStore(appUrls.onemac, spaOptions);
+let store: ReturnType<typeof createSpaRecordStore>;
 test.beforeAll(async () => {
+    store = createSpaRecordStore(appUrls.onemac, requiredSpaOptionsFromEnv());
     targetSpaId = process.env.RAI_WITHDRAWAL_SPA_ID ?? (await store.latestPendingSecondClock()).spaId;
 });
 
