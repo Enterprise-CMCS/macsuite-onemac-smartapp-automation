@@ -2,6 +2,8 @@ import { expect, Page } from '@playwright/test';
 import path from 'node:path';
 import { appUrls } from '../../config/urls';
 import { onemacAttachments } from '../../data/onemac-attachments';
+import { openOneMacPage } from './open-page';
+
 
 const repoRoot = path.resolve(__dirname, '../../..');
 
@@ -10,8 +12,7 @@ export class OneMacSubsequentDocuments {
 
     // Opens the subsequent-documents form from the package details page.
     async open(spaId: string): Promise<void> {
-        await this.page.goto(`${appUrls.onemac.replace(/\/$/, '')}/actions/upload-subsequent-documents/Medicaid%20SPA/${spaId}?origin=details`);
-        await this.page.waitForLoadState('networkidle');
+        await openOneMacPage(this.page, `${appUrls.onemac.replace(/\/$/, '')}/actions/upload-subsequent-documents/Medicaid%20SPA/${spaId}?origin=details`);
     }
 
     // Each slot opens a file chooser from its "-click" span; the chooser sets files on the slot.

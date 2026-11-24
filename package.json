@@ -15,12 +15,12 @@
     "test:onemac": "playwright test --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts",
     "test:onemac-rai-response": "playwright test --headed tests/onemac/workflow/OneMAC-respond-rai.spec.ts",
     "test:onemac-status": "playwright test --headed tests/onemac/status/OneMAC-status-under-review.spec.ts",
-    "test:all": "node tests/suites/run-suite-approval.mjs",
-    "test:rai": "node tests/suites/run-suite-rai-approve.mjs",
-    "test:rai-withdrawal": "node tests/suites/run-suite-rai-withdrawal.mjs",
-    "test:companion-letter": "node tests/suites/run-suite-companion-letter.mjs",
-    "test:all-suites": "node tests/suites/run-all.mjs",
-    "test:browsers": "node tests/suites/run-browsers.mjs tests/onemac/workflow/OneMAC-new-SPA.spec.ts \"Create new Med SPA\""
+    "test:all": "node tests/med-spa-suites/run-suite-approval.mjs",
+    "test:rai": "node tests/med-spa-suites/run-suite-rai-approve.mjs",
+    "test:rai-withdrawal": "node tests/med-spa-suites/run-suite-rai-withdrawal.mjs",
+    "test:companion-letter": "node tests/med-spa-suites/run-suite-companion-letter.mjs",
+    "test:all-suites": "node tests/med-spa-suites/run-all.mjs",
+    "test:browsers": "node tests/med-spa-suites/run-browsers.mjs tests/onemac/workflow/OneMAC-new-SPA.spec.ts \"Create new Med SPA\""
   },
   "keywords": [],
   "author": "",

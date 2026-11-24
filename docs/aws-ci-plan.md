@@ -39,6 +39,6 @@ Working notes for moving live Playwright suites to an AWS VM with AWS Secrets Ma
 - Restrict IAM read access on the secret to the VM role and the workflow.
 
 ## Other open items
-- Post-intake split spec (`tests/smart/super/split-spa-pending-first-clock.spec.ts`): Notes and Review checks are written but have never run live. They need a fresh SPA and approval.
-- Intake Needed split suite (`tests/suites/run-suite-split-intake-approval.mjs`): not run end to end.
+- Post-intake split spec (`tests/smart/med-spa/super/split-spa-pending-first-clock.spec.ts`): Notes and Review checks are written but have never run live. They need a fresh SPA and approval.
+- Intake Needed split suite (`tests/med-spa-suites/run-suite-split-intake-approval.mjs`): not run end to end.
 - Slack webhook: create with a Slack app (Incoming Webhooks), store in Secrets Manager, not in the repo.

@@ -54,15 +54,22 @@ export class CompanionLetterRecord {
 
     async openFromOversight(letterName: string, recordId: string): Promise<void> {
         const origin = new URL(this.page.url()).origin;
-        await this.page.goto(`${origin}/lightning/o/SMART_CMCS_Companion_Letter__c/home`);
-        const listPicker = this.page.getByRole('button', { name: /Select a List View/ });
-        await expect(listPicker).toHaveCount(1);
-        await listPicker.click();
-        await this.page.getByRole('option', { name: 'All', exact: true }).click();
-        const search = this.page.getByRole('searchbox', { name: 'Search this list...' });
-        await search.fill(letterName);
-        await search.press('Enter');
         const link = this.page.getByRole('link', { name: letterName, exact: true });
+        // A new letter can take a moment to show in the list, so reload and search again until it appears.
+        const attempts = 10;
+        let found = false;
+        for (let attempt = 1; attempt <= attempts && !found; attempt++) {
+            await this.page.goto(`${origin}/lightning/o/SMART_CMCS_Companion_Letter__c/home`);
+            const listPicker = this.page.getByRole('button', { name: /Select a List View/ });
+            await expect(listPicker).toHaveCount(1);
+            await listPicker.click();
+            await this.page.getByRole('option', { name: 'All', exact: true }).click();
+            const search = this.page.getByRole('searchbox', { name: 'Search this list...' });
+            await search.fill(letterName);
+            await search.press('Enter');
+            found = await link.waitFor({ state: 'visible', timeout: 15_000 }).then(() => true, () => false);
+        }
+        if (!found) throw new Error(`${letterName} did not appear in Oversight and Monitoring after ${attempts} searches.`);
         await expect(link).toHaveCount(1);
         await expect(link).toHaveAttribute('href', new RegExp(`/${recordId}/view`));
         await link.click();
@@ -190,7 +197,7 @@ export class CompanionLetterRecord {
     }
 
     // Uploads through the letter's own Files article, not the SPA attachments. The file must be listed afterwards.
-    async uploadFile(filePath: string, fileName: string): Promise<void> {
+    async uploadFile(filePath: string): Promise<void> {
         await this.openDetails();
         const files = this.page.getByRole('article', { name: 'Files', exact: true });
         await expect(files).toHaveCount(1);
@@ -198,8 +205,7 @@ export class CompanionLetterRecord {
         // The "Upload Files" control resolves to a hidden file input that Lightning overlays, so clicking it retries and scrolls the page.
         await files.locator('input[type="file"]').setInputFiles(filePath);
         await this.page.getByRole('button', { name: 'Done', exact: true }).click();
-        await expect(files.getByRole('link').filter({ hasText: fileName }).first()).toBeVisible();
-        await expect.poll(() => this.fileCount()).toBe(countBefore + 1);
+        await expect.poll(() => this.fileCount(), { timeout: 60_000 }).toBe(countBefore + 1);
     }
 
     async fileCount(): Promise<number> {

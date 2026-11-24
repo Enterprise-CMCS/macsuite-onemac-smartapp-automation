@@ -1,4 +1,22 @@
-import { expect, Page, TestInfo } from '@playwright/test';
+import { expect, Locator, Page, TestInfo } from '@playwright/test';
+
+// Opens the dashboard and searches for the package. If OneMAC shows "Page not found" at any point, the whole
+// open-and-search sequence starts again from Home, since the search box is gone once the route breaks.
+export async function findPackageOnDashboard(page: Page, spaId: string): Promise<Locator> {
+    const searchBox = page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
+    const spaLink = page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
+    await expect(async () => {
+        await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+        await page.getByTestId('Dashboard-d').click();
+        await expect(searchBox).toBeVisible({ timeout: 15_000 });
+        // New packages can lag behind in search, so retry the search until the row appears.
+        await searchBox.fill(spaId);
+        await searchBox.press('Enter');
+        await expect(spaLink).toBeVisible({ timeout: 10_000 });
+        await expect(page.getByText(/Sorry, we couldn.t find that page/)).toHaveCount(0);
+    }).toPass({ timeout: 180_000, intervals: [5_000] });
+    return spaLink;
+}
 
 export class OneMacDashboard {
     constructor(private readonly page: Page) {}
@@ -8,20 +26,7 @@ export class OneMacDashboard {
     // Accepts one or more allowed statuses and returns the one OneMAC shows.
     async expectPackageStatus<T extends string>(spaId: string, status: T | T[], testInfo: TestInfo): Promise<T> {
         const allowed = Array.isArray(status) ? status : [status];
-        const searchBox = this.page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
-        // The dashboard route sometimes renders "Page not found" on the first click, so reopen it until the search box shows.
-        await expect(async () => {
-            await this.page.getByRole('link', { name: 'Home', exact: true }).first().click();
-            await this.page.getByTestId('Dashboard-d').click();
-            await expect(searchBox).toBeVisible({ timeout: 15_000 });
-        }).toPass({ timeout: 90_000, intervals: [5_000] });
-        const spaLink = this.page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
-        // New packages can lag behind in search, so retry the search until the row appears.
-        await expect(async () => {
-            await searchBox.fill(spaId);
-            await searchBox.press('Enter');
-            await expect(spaLink).toBeVisible({ timeout: 10_000 });
-        }).toPass({ timeout: 120_000, intervals: [5_000] });
+        const spaLink = await findPackageOnDashboard(this.page, spaId);
         const spaRow = this.page.getByTestId('os-table').getByRole('row').filter({ has: this.page.getByRole('link', { name: spaId, exact: true }) });
         let observed: T | undefined;
         await expect.poll(async () => {
