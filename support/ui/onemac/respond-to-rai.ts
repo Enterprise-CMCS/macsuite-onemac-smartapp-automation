@@ -1,6 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import path from 'node:path';
 import { appUrls } from '../../config/urls';
+import { openOneMacPage } from './open-page';
 
 export class OneMacRespondToRai {
     constructor(private readonly page: Page) { }
@@ -8,8 +9,7 @@ export class OneMacRespondToRai {
     // Opens the Formal RAI response form, uploads the letter, and submits after the confirmation dialog.
     // This is a live submission. Callers must have the user's explicit authorization.
     async submit(spaId: string, letterPath: string, additionalInformation: string): Promise<void> {
-        await this.page.goto(`${appUrls.onemac.replace(/\/$/, '')}/actions/respond-to-rai/Medicaid%20SPA/${spaId}?origin=details`);
-        await this.page.waitForLoadState('networkidle');
+        await openOneMacPage(this.page, `${appUrls.onemac.replace(/\/$/, '')}/actions/respond-to-rai/Medicaid%20SPA/${spaId}?origin=details`);
 
         // The first file input is the required RAI Response Letter.
         const fileInputs = this.page.locator('input[type="file"]');

@@ -1,12 +1,12 @@
 import { expect, Page } from '@playwright/test';
 import { appUrls } from '../../config/urls';
+import { openOneMacPage } from './open-page';
 
 export class OneMacPackageDetails {
     constructor(private readonly page: Page) { }
 
     async open(spaId: string): Promise<void> {
-        await this.page.goto(`${appUrls.onemac.replace(/\/$/, '')}/details/Medicaid%20SPA/${spaId}`);
-        await this.page.waitForLoadState('networkidle');
+        await openOneMacPage(this.page, `${appUrls.onemac.replace(/\/$/, '')}/details/Medicaid%20SPA/${spaId}`);
     }
 
     // Reads the value shown next to a details term, e.g. "Final Disposition Date".

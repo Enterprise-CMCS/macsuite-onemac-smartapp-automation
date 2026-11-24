@@ -7,6 +7,7 @@ import { createSpaRecordStore } from '../../../support/data/spa-store';
 import { appUrls } from '../../../support/config/urls';
 import { onemacDisplayDate, toSmartDate } from '../../../support/data/onemac-dates';
 import { onemacAttachments } from '../../../support/data/onemac-attachments';
+import { findPackageOnDashboard } from '../../../support/ui/onemac/dashboard';
 
 const uploadFile = (name: string) => path.resolve(__dirname, '../../../support/documents/upload', name);
 const additionalInformationText = 'this is a test';
@@ -37,21 +38,7 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     await expect(page.getByText('Package submitted')).toBeVisible();
     await records.markSubmitted(spaId);
 
-    const searchBox = page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
-    // Right after submit, the dashboard route can render "Page not found", so reopen it until the search box shows.
-    await expect(async () => {
-        await page.getByRole('link', { name: 'Home', exact: true }).first().click();
-        await page.getByRole('link', { name: 'Dashboard', exact: true }).first().click();
-        await expect(page).toHaveURL(/\/dashboard$/);
-        await expect(searchBox).toBeVisible({ timeout: 15_000 });
-    }).toPass({ timeout: 90_000, intervals: [5_000] });
-    // The dashboard is search-indexed, so a new package can lag behind the submit banner.
-    const spaLink = page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
-    await expect(async () => {
-        await searchBox.fill(spaId);
-        await searchBox.press('Enter');
-        await expect(spaLink).toBeVisible({ timeout: 10_000 });
-    }).toPass({ timeout: 120_000, intervals: [5_000] });
+    const spaLink = await findPackageOnDashboard(page, spaId);
     // A click can land while the search table is still re-rendering and not navigate, so retry the click until the details page opens.
     await expect(async () => {
         await spaLink.click();

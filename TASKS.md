@@ -44,7 +44,7 @@ Available commands:
 npm run test:list
 npm run quality
 npm run spa:current
-SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --headed --project=chromium
+SF_ROLE=INTAKE npx playwright test tests/smart/med-spa/intake/intake.spec.ts --headed --project=chromium
 SF_ROLE=CPOC npm run test:smart -- intake.spec.ts --headed
 npm run test:onemac -- --list
 npx playwright test --config=playwright.unit.config.ts

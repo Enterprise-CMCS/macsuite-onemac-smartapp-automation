@@ -22,8 +22,8 @@
 Run one SMART test as a selected role:
 
 ```sh
-SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed
-SF_ROLE=CPOC npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --headed
+SF_ROLE=INTAKE npx playwright test tests/smart/med-spa/intake/intake.spec.ts --project=chromium --headed
+SF_ROLE=CPOC npx playwright test tests/smart/med-spa/intake/intake.spec.ts --project=chromium --headed
 ```
 
 The SMART fixture loads the latest confirmed SPA ID automatically. Change

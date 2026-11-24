@@ -21,7 +21,7 @@ changes small; do not refactor unrelated captured locators or bypass failing gat
    do not log in or submit records. They are not substitutes for live validation.
 3. Run the changed spec against the approved sandbox only if authorized and its
    initial business state still exists. Read-only local discovery example:
-   `SF_ROLE=INTAKE npx playwright test tests/smart/intake/intake.spec.ts --project=chromium --list`.
+   `SF_ROLE=INTAKE npx playwright test tests/smart/med-spa/intake/intake.spec.ts --project=chromium --list`.
    Removing `--list` makes it a live run; `--headed` is optional visibility, not
    an authorization or safety boundary.
 4. Do not automatically retry mutating live tests, run them with `--repeat-each`,
