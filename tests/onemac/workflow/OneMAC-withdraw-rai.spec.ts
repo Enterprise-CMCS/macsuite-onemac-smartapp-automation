@@ -2,7 +2,7 @@ import path from 'node:path';
 import { test } from '../../../support/fixtures/onemac.fixture';
 import { expect } from '@playwright/test';
 import { appUrls } from '../../../support/config/urls';
-import { requiredSpaOptionsFromEnv } from '../../../support/data/spa';
+import { spaOptionsFromEnv } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
 import { OneMacDashboard } from '../../../support/ui/onemac/dashboard';
 import { raiResponseFiles } from '../../../support/data/onemac-attachments';
@@ -13,7 +13,7 @@ import { raiResponseFiles } from '../../../support/data/onemac-attachments';
 let targetSpaId: string;
 let store: ReturnType<typeof createSpaRecordStore>;
 test.beforeAll(async () => {
-    store = createSpaRecordStore(appUrls.onemac, requiredSpaOptionsFromEnv());
+    store = createSpaRecordStore(appUrls.onemac, spaOptionsFromEnv());
     targetSpaId = process.env.RAI_WITHDRAWAL_SPA_ID ?? (await store.latestPendingSecondClock()).spaId;
 });
 

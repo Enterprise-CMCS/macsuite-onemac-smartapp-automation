@@ -2,8 +2,9 @@ import { test, expect, Page } from '@playwright/test';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { chooseSpaId, duplicateSpaMessage, formatSpaId, formatSplitSpaId, requiredSpaOptionsFromEnv, SpaOptions, spaOptionsFromEnv, spaStates } from '../../support/data/spa';
+import { chooseSpaId, duplicateSpaMessage, formatSpaId, formatSplitSpaId, SpaOptions, spaOptionsFromEnv, spaStates } from '../../support/data/spa';
 import { createSpaRecordStore, selectSpaTarget } from '../../support/data/spa-store';
+import { createCompanionLetterStore } from '../../support/data/companion-letter-store';
 import { currentSpaSummary } from '../../support/data/current-spa';
 import { onemacDisplayDate, toSmartDate } from '../../support/data/onemac-dates';
 
@@ -54,15 +55,15 @@ test('formats all allowed states and rejects malformed IDs', () => {
     expect(() => formatSpaId('CA', '2026', 37)).toThrow('SPA year');
 });
 
-test('requires SPA_STATE for OneMAC workflow specs with no default', () => {
+test('requires SPA_STATE with no default', () => {
     const original = { ...process.env };
     try {
         delete process.env.SPA_STATE;
-        expect(() => requiredSpaOptionsFromEnv()).toThrow('Set SPA_STATE');
+        expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
         process.env.SPA_STATE = '  ';
-        expect(() => requiredSpaOptionsFromEnv()).toThrow('Set SPA_STATE');
+        expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
         process.env.SPA_STATE = 'CO';
-        expect(requiredSpaOptionsFromEnv()).toMatchObject({ state: 'CO' });
+        expect(spaOptionsFromEnv()).toMatchObject({ state: 'CO' });
     } finally {
         process.env = original;
     }
@@ -464,5 +465,15 @@ test('an interrupted reservation is never reused or handed off', async () => {
         expect(await exhausted.reserve()).toBe('AL-26-9999-QA01');
         await writeFile(exhausted.file, JSON.stringify({ ...JSON.parse(await readFile(exhausted.file, 'utf8')), lastSuffix: 99 }));
         await expect(exhausted.reserve()).rejects.toThrow('between 1 and 9999');
+    });
+
+    test('a saved companion letter is found by a later run, and a second letter for the same SPA is refused', async () => {
+        const letter = { spaId: 'CA-26-0086-QA14', letterName: 'CA-26-0086-QA14-CL', recordId: 'a1iSL000006qb4rYAA', createdByRole: 'group_director' as const };
+        await createCompanionLetterStore(environment, directory).record(letter);
+        expect(await createCompanionLetterStore(environment, directory).find('CA-26-0086-QA14'))
+            .toMatchObject({ ...letter, createdAt: expect.any(String) });
+        await createCompanionLetterStore(environment, directory).record(letter);
+        await expect(createCompanionLetterStore(environment, directory).record({ ...letter, recordId: 'a1iSL000006other' }))
+            .rejects.toThrow('already has companion letter');
     });
 });

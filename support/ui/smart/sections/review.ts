@@ -10,8 +10,9 @@ const reviewGridHeading: Record<ReviewClock, string> = {
 export class SmartReview {
     constructor(readonly page: Page) { }
 
-    async assignCpoc(searchText: string, notes: string): Promise<void> {
-        await this.assignUser(searchText, notes, 'cpoc');
+    // Searching by name can match several users. rowText picks the row to select, for example the user's email.
+    async assignCpoc(searchText: string, notes: string, rowText: string = searchText): Promise<void> {
+        await this.assignUser(searchText, notes, 'cpoc', rowText);
     }
 
     // Searching by name can match several users. rowText picks the row to select, for example the user's email.
@@ -123,11 +124,9 @@ export class SmartReview {
 
     private async openReviewTeamRecord(memberName: string, clock?: ReviewClock): Promise<void> {
         await this.openReviewTab();
-        // The same member name also appears in the RAI Questions grid, so match only the Review Team record link.
-        // A split SPA also lists the second-clock member in Second Clock Intake, so the second clock search stays inside its grid.
-        const scope: Page | Locator = clock === 'second'
-            ? this.page.locator('article').filter({ has: this.page.getByRole('heading', { name: reviewGridHeading.second, exact: true }) })
-            : this.page;
+        // The same member name also appears in the RAI Questions grid, so the search stays inside the review grid for its clock.
+        // A split SPA also lists the second-clock member in Second Clock Intake, which is why the clock grid is always used.
+        const scope: Page | Locator = this.page.locator('article').filter({ has: this.page.getByRole('heading', { name: reviewGridHeading[clock ?? 'first'], exact: true }) });
         const memberLink = scope.locator('a[href*="SMART_CMCS_Submission_Review_Team__c"]')
             .filter({ hasText: new RegExp(`^${memberName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) });
         await expect(memberLink).toHaveCount(1);
@@ -170,7 +169,8 @@ export class SmartReview {
         await expect.poll(async () => {
             await this.openReviewTab();
             await refresh.click();
-            const row = grid.getByRole('row').filter({ hasText: memberName }).first();
+            // Match the whole row name, since "CPOC4 Automation" is also a substring of "CPOC4 AutomationCPOC".
+            const row = grid.getByRole('row').filter({ has: this.page.getByRole('rowheader', { name: memberName, exact: true }) });
             return row.textContent();
         }, { timeout: 60000 }).toContain(progress);
     }
@@ -238,7 +238,9 @@ export class SmartReview {
         }
         await search.fill(searchText);
         await search.press('Enter');
-        const resultRow = this.page.getByRole('row').filter({ hasText: rowText });
+        // Emails are shown only as link accessible names (for example "Email name@x.com"), not as row text, so rowText can match either.
+        const rows = this.page.getByRole('row');
+        const resultRow = rows.filter({ hasText: rowText }).or(rows.filter({ has: this.page.getByRole('link', { name: rowText }) }));
         await expect(resultRow).toHaveCount(1);
         const selectionCell = resultRow.getByRole('gridcell', { name: /Select Item/ });
         await expect(selectionCell).toBeVisible();

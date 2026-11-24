@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { test } from '../../../support/fixtures/onemac.fixture';
 import { appUrls } from '../../../support/config/urls';
-import { requiredSpaOptionsFromEnv, SpaOptions } from '../../../support/data/spa';
+import { spaOptionsFromEnv, SpaOptions } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
 import { OneMacRespondToRai } from '../../../support/ui/onemac/respond-to-rai';
 import { OneMacPackageDetails } from '../../../support/ui/onemac/package-details';
@@ -15,7 +15,7 @@ import { raiResponseFiles } from '../../../support/data/onemac-attachments';
 let targetSpaId: string;
 let spaOptions: SpaOptions;
 test.beforeAll(async () => {
-    spaOptions = requiredSpaOptionsFromEnv();
+    spaOptions = spaOptionsFromEnv();
     targetSpaId = process.env.RAI_SPA_ID ?? (await createSpaRecordStore(appUrls.onemac, spaOptions).latestPendingRai()).spaId;
 });
 
