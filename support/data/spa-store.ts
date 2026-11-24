@@ -81,13 +81,13 @@ type SequenceData = {
     records: SpaRecord[];
 };
 
-const defaultRecordsDirectory = path.resolve(__dirname, '../../playwright/.records');
+export const defaultRecordsDirectory = path.resolve(__dirname, '../../playwright/.records');
 const latestFileName = 'latest.json';
 
 // Pointer to the most recent OneMAC submission across all states for one environment.
 type LatestSubmission = { spaId: string; state: string; year: string; submittedAt: string };
 
-function environmentFolder(directory: string, environmentUrl: string): string {
+export function environmentFolder(directory: string, environmentUrl: string): string {
     return path.join(directory, createHash('sha256').update(new URL(environmentUrl).origin).digest('hex'));
 }
 

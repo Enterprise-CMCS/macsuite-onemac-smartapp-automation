@@ -42,17 +42,13 @@ export function formatSplitSpaId(parentSpaId: string, identifier: string): strin
     return `${parentSpaId}-${identifier}`;
 }
 
-// For OneMAC workflow specs that create or mutate records: no default state, so a missing SPA_STATE fails before any browser step.
-export function requiredSpaOptionsFromEnv(): SpaOptions {
+// No default state: a missing SPA_STATE fails before any browser step.
+export function spaOptionsFromEnv(): SpaOptions {
     if (!process.env.SPA_STATE?.trim()) {
         throw new Error(`Set SPA_STATE to the state for this run (one of: ${spaStates.join(', ')}), e.g. SPA_STATE=CA.`);
     }
-    return spaOptionsFromEnv();
-}
-
-export function spaOptionsFromEnv(): SpaOptions {
     const options = {
-        state: process.env.SPA_STATE ?? 'CA',
+        state: process.env.SPA_STATE,
         year: String(new Date().getFullYear()).slice(-2),
         startSequence: Number(process.env.SPA_START_SEQUENCE ?? '1'),
         maxAttempts: Number(process.env.SPA_MAX_ATTEMPTS ?? '25'),

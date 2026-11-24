@@ -215,6 +215,36 @@ for (const initiallyChecked of [false, true]) {
     });
 }
 
+test('CPOC assignment selects the row whose email link matches, not the longer name match', async ({ page }) => {
+    page.on('pageerror', (error) => { throw error; });
+    await page.setContent(`
+        <button role="tab">Review</button>
+        <input type="search" aria-label="Search by Name or Email" />
+        <table role="grid"><tbody>
+            <tr role="row" aria-selected="false"><td role="gridcell" onclick="selectRow(this)">Select Item 1</td>
+                <th role="rowheader">CPOC4 Automation</th><td role="gridcell"><a href="mailto:macproemailnotification@gmail.com">Email macproemailnotification@gmail.com</a></td></tr>
+            <tr role="row" aria-selected="false"><td role="gridcell" onclick="selectRow(this)">Select Item 2</td>
+                <th role="rowheader">CPOC4 AutomationCPOC</th><td role="gridcell"><a href="mailto:testautomationnotifications@gmail.com">Email testautomationnotifications@gmail.com</a></td></tr>
+        </tbody></table>
+        <button onclick="document.querySelector('[role=dialog]').hidden = false">Assign</button>
+        <div role="dialog" aria-label="Assignment Notes" hidden>
+            <label>Assignment Notes<textarea></textarea></label>
+            <lightning-input data-role="cpoc"><label><input type="checkbox" />Designate as CPOC</label></lightning-input>
+            <button onclick="document.querySelector('p').hidden = false">Save Assignments</button>
+        </div>
+        <p hidden>Success notification.</p>
+        <script>
+        function selectRow(cell) {
+            document.querySelectorAll('tr[role=row]').forEach((row) => row.setAttribute('aria-selected', 'false'));
+            cell.parentElement.setAttribute('aria-selected', 'true');
+        }
+        </script>
+    `);
+    await new SmartReview(page).assignCpoc('CPOC4', 'test assignment', 'macproemailnotification@');
+    await expect(page.locator('tr[aria-selected="true"]')).toHaveCount(1);
+    await expect(page.locator('tr[aria-selected="true"] th')).toHaveText('CPOC4 Automation');
+});
+
 test('notes are added in the sidebar composer without opening the Notes tab', async ({ page }) => {
     await page.setContent(`
         <button role="tab" onclick="document.body.dataset.notesTab = 'opened'">Notes</button>
@@ -394,3 +424,19 @@ test('OneMAC attachments verification checks every initial-package file and its 
     await page.locator('a[aria-label="SFQs.png"]').evaluate((link) => link.closest('tr')?.remove());
     await expect(attachments.verifyOnemacSubmission(onemacAttachments, 'this is a test')).rejects.toThrow();
 });
+
+test('review progress reads the CPOC row by exact name, not the longer CPOC4 AutomationCPOC row', async ({ page }) => {
+    await page.setContent(`
+        <button role="tab">Review</button>
+        <article>
+            <h2>Submission Review Team</h2>
+            <button>Refresh</button>
+            <table role="grid"><tbody>
+                <tr role="row"><th role="rowheader">CPOC4 AutomationCPOC</th><td>Recommending Disapproval</td></tr>
+                <tr role="row"><th role="rowheader">CPOC4 Automation</th><td>Recommending Approval</td></tr>
+            </tbody></table>
+        </article>
+    `);
+    await new SmartReview(page).expectReviewTeamProgress('CPOC4 Automation', 'Recommending Approval', 'first');
+});
+

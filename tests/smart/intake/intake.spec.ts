@@ -67,7 +67,8 @@ test('Intake completes each OneMAC Medicaid SPA in the workflow and moves it to 
         //     await spaRecord.details.updatePriority('P2', 'testing priority');
         // });
 
-        await spaRecord.review.assignCpoc('CPOC4', 'testing');
+        // Searching "CPOC4 Automation" also matches "CPOC4 AutomationCPOC", so select the row by its email.
+        await spaRecord.review.assignCpoc('CPOC4 Automation', 'testing', 'macproemailnotification@');
         await spaRecord.review.assignSrt('SRTUSER PW', 'assign SRT user');
         await spaRecord.notes.addNote('testing new notes');
         await spaRecord.details.markIntakeComplete();

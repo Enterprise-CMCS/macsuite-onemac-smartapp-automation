@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../support/fixtures/smart.fixture';
 import { appUrls } from '../../../support/config/urls';
-import { requiredSpaOptionsFromEnv } from '../../../support/data/spa';
+import { spaOptionsFromEnv } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
 
 // RAI_WITHDRAWAL_SPA_ID targets a specific Pending - RAI SPA (one with a formal RAI response submitted).
@@ -9,7 +9,7 @@ import { createSpaRecordStore } from '../../../support/data/spa-store';
 // The store is moved to Pending - Second Clock during the run once SMART shows that status.
 let targetSpaId: string;
 test.beforeAll(async () => {
-    const spaOptions = requiredSpaOptionsFromEnv();
+    const spaOptions = spaOptionsFromEnv();
     targetSpaId = process.env.RAI_WITHDRAWAL_SPA_ID ?? (await createSpaRecordStore(appUrls.onemac, spaOptions).latestPendingRai()).spaId;
 });
 test.use({ spaId: async ({ }, use) => use(targetSpaId) });

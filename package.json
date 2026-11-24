@@ -18,6 +18,7 @@
     "test:all": "node tests/suites/run-suite-approval.mjs",
     "test:rai": "node tests/suites/run-suite-rai-approve.mjs",
     "test:rai-withdrawal": "node tests/suites/run-suite-rai-withdrawal.mjs",
+    "test:companion-letter": "node tests/suites/run-suite-companion-letter.mjs",
     "test:all-suites": "node tests/suites/run-all.mjs",
     "test:browsers": "node tests/suites/run-browsers.mjs tests/onemac/workflow/OneMAC-new-SPA.spec.ts \"Create new Med SPA\""
   },

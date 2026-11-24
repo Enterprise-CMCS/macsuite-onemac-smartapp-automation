@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import path from 'node:path';
 import { pickFutureDate } from '../../../support/data/future-date';
 import { test } from '../../../support/fixtures/onemac.fixture';
-import { chooseSpaId, requiredSpaOptionsFromEnv } from '../../../support/data/spa';
+import { chooseSpaId, spaOptionsFromEnv } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
 import { appUrls } from '../../../support/config/urls';
 import { onemacDisplayDate, toSmartDate } from '../../../support/data/onemac-dates';
@@ -12,7 +12,7 @@ const uploadFile = (name: string) => path.resolve(__dirname, '../../../support/d
 const additionalInformationText = 'this is a test';
 test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     const testStartedAt = new Date();
-    const spaOptions = requiredSpaOptionsFromEnv();
+    const spaOptions = spaOptionsFromEnv();
     const records = createSpaRecordStore(appUrls.onemac, spaOptions);
     await page.getByRole('link', { name: 'New Submission' }).click();
     await page.getByRole('link', { name: 'State Plan Amendment (SPA)' }).click();

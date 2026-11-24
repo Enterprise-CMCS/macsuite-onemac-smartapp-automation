@@ -37,6 +37,23 @@ export class SmartFieldHistory {
         await expect(status.locator('[role="gridcell"][data-label="New Value"]')).toHaveText(to);
     }
 
+    // Checks the newest change to a field on one child issue in the Issue History grid, the one with the Related Record column.
+    async expectLatestIssueChange(issue: string, field: string, expected: { original?: string; newValue: string; user: RegExp }): Promise<void> {
+        const historyGrid = this.page.getByRole('grid', { name: 'Field history', exact: true })
+            .filter({ has: this.page.getByRole('rowheader', { name: issue, exact: true }) });
+        await expect(historyGrid).toHaveCount(1);
+        const row = historyGrid.getByRole('row').filter({
+            has: this.page.getByRole('rowheader', { name: issue, exact: true }),
+        }).filter({
+            has: this.page.getByRole('gridcell', { name: field, exact: true }),
+        }).first();
+        if (expected.original !== undefined) {
+            await expect(row.locator('[role="gridcell"][data-label="Original Value"]')).toHaveText(expected.original);
+        }
+        await expect(row.locator('[role="gridcell"][data-label="New Value"]')).toHaveText(expected.newValue);
+        await expect(row.locator('[role="gridcell"][data-label="User"]')).toHaveText(expected.user);
+    }
+
     async verifyIntakeChanges(expected: IntakeHistoryExpectations): Promise<void> {
         const tab = this.page.getByRole('tab', { name: 'Field History Tracking', exact: true });
         await expect(tab).toHaveCount(1);
