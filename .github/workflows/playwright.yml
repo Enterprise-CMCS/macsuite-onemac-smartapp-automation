@@ -1,10 +1,18 @@
 name: Playwright Live Tests
 on:
   workflow_dispatch:
+concurrency:
+  group: smart-live
+  cancel-in-progress: false
 jobs:
-  test:
-    timeout-minutes: 60
+  smart-login-smoke:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
+    environment: live-smart
+    env:
+      SF_INTAKE_USERNAME: ${{ secrets.SF_INTAKE_USERNAME }}
+      SF_INTAKE_PASSWORD: ${{ secrets.SF_INTAKE_PASSWORD }}
+      SF_INTAKE_TOTP_SECRET: ${{ secrets.SF_INTAKE_TOTP_SECRET }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -12,10 +20,10 @@ jobs:
         node-version: lts/*
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
+    - name: Install Playwright Chromium
+      run: npx playwright install chromium
+    - name: Run SMART login smoke test
+      run: npx playwright test tests/smart/smoke/smart-login.spec.ts --project=chromium
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
