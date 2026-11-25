@@ -7,7 +7,7 @@ concurrency:
 jobs:
   smart-login-smoke:
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     environment: live-smart
     env:
       SF_INTAKE_USERNAME: ${{ secrets.SF_INTAKE_USERNAME }}
