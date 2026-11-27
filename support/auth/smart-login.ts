@@ -9,7 +9,8 @@ export type SmartCredentials = {
 };
 
 const MAX_VERIFICATION_ATTEMPTS = 3;
-const VERIFICATION_RETRY_DELAY_MS = 5_000;
+// TOTP codes change every 30 seconds, and Salesforce rejects a code that was already used. A retry must wait for the next window.
+const TOTP_PERIOD_MS = 30_000;
 const CODE_REJECTED = /Invalid or expired verification code/i;
 
 export async function loginAsUser(page: Page, creds: SmartCredentials) {
@@ -28,7 +29,10 @@ export async function loginAsUser(page: Page, creds: SmartCredentials) {
         await page.click('button[type="submit"], #save');
         await appLauncher.or(page.getByText(CODE_REJECTED)).first().waitFor();
         if (await appLauncher.isVisible()) return;
-        if (attempt < MAX_VERIFICATION_ATTEMPTS) await page.waitForTimeout(VERIFICATION_RETRY_DELAY_MS);
+        if (attempt < MAX_VERIFICATION_ATTEMPTS) {
+            // Wait 1s past the next 30-second boundary so the retry gets a code that has not been used.
+            await page.waitForTimeout(TOTP_PERIOD_MS - (Date.now() % TOTP_PERIOD_MS) + 1_000);
+        }
     }
     await expect(appLauncher, 'Salesforce rejected every verification code').toBeVisible();
 }
