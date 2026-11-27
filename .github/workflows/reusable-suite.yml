@@ -46,7 +46,6 @@ jobs:
       cancel-in-progress: false
     env:
       SPA_STATE: ${{ inputs.state }}
-      TZ: America/Chicago
       BROWSER: chromium
       HEADLESS: '1'
       SUITE_LANE: ${{ inputs.lane }}
@@ -88,6 +87,12 @@ jobs:
       run: npm ci
     - name: Install Playwright Chromium
       run: npx playwright install chromium
+    - name: Set runner timezone to Central
+      uses: szenius/set-timezone@v2.0
+      with:
+        timezoneLinux: America/Chicago
+        timezoneMacos: America/Chicago
+        timezoneWindows: Central Standard Time
     - name: Stagger start
       if: ${{ inputs.start-delay > 0 }}
       shell: bash
