@@ -37,7 +37,7 @@ export function sendSlackSummary({ title, runStatus, suiteNames, projects = [], 
         const send = spawnSync(
             'npx',
             ['playwright-slack-report', '-c', slackConfigFile, '-j', jsonFile, '--run-status', runStatus],
-            { stdio: 'inherit' },
+            { stdio: 'inherit', shell: process.platform === 'win32' },
         );
         if (send.status !== 0) {
             console.error('\nCould not send the Slack summary.');

@@ -10,6 +10,7 @@
     "test:unit": "playwright test --config=playwright.unit.config.ts",
     "check:customizations": "node scripts/checks/check-customizations.cjs",
     "quality": "npm run check:customizations && npm run typecheck && npm run test:unit && npm run test:list",
+    "ci-state:seed": "tsx scripts/ci/seed-ci-state.ts",
     "spa:current": "tsx support/data/current-spa.ts",
     "test:smart": "playwright test --project=chromium",
     "test:onemac": "playwright test --headed tests/onemac/workflow/OneMAC-new-SPA.spec.ts",

@@ -62,6 +62,7 @@ test('requires SPA_STATE with no default', () => {
         expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
         process.env.SPA_STATE = '  ';
         expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
+        delete process.env.CI;
         process.env.SPA_STATE = 'CO';
         expect(spaOptionsFromEnv()).toMatchObject({ state: 'CO' });
     } finally {
@@ -72,6 +73,7 @@ test('requires SPA_STATE with no default', () => {
 test('reads configurable state, starting sequence, and attempt limit with the current year', () => {
     const original = { ...process.env };
     try {
+        delete process.env.CI;
         process.env.SPA_STATE = 'md';
         process.env.SPA_YEAR = '00';
         process.env.SPA_START_SEQUENCE = '50';
@@ -407,18 +409,22 @@ test('an interrupted reservation is never reused or handed off', async () => {
         expect(await readFile(store.file, 'utf8')).toBe(before);
     });
 
-    test('SMART target is the most recent submission across states, not the per-state latest', async () => {
+    test('SMART target is the newest submission for SPA_STATE and never another state', async () => {
         const ca = createSpaRecordStore(environment, seed, directory);
         const caId = await ca.reserve();
         await ca.markSubmitted(caId);
         const va = createSpaRecordStore(environment, { state: 'VA', year: '26', startSequence: 1 }, directory);
         const vaId = await va.reserve();
         await va.markSubmitted(vaId);
-        expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: vaId, state: 'VA', year: '26' });
+        expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: caId, state: 'CA', year: '26' });
+        expect(await selectSpaTarget(environment, undefined, { ...seed, state: 'VA' }, directory)).toMatchObject({ spaId: vaId, state: 'VA' });
         const caLaterId = await ca.reserve();
         await ca.markSubmitted(caLaterId);
+        await ca.markPendingFirstClock(caLaterId);
+        // Intake clears the state's latestSubmitted, but the newest submission is still the SMART target.
         expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: caLaterId, state: 'CA' });
         expect(await selectSpaTarget(environment, caId, seed, directory)).toMatchObject({ spaId: caId, state: 'CA' });
+        await expect(selectSpaTarget(environment, undefined, { ...seed, state: 'MD' }, directory)).rejects.toThrow('No confirmed SPA submission');
     });
 
     test('current SPA summary fails clearly without creating a missing store', async () => {
@@ -476,4 +482,18 @@ test('an interrupted reservation is never reused or handed off', async () => {
         await expect(createCompanionLetterStore(environment, directory).record({ ...letter, recordId: 'a1iSL000006other' }))
             .rejects.toThrow('already has companion letter');
     });
+});
+test('keeps local and CI states separate', () => {
+    const original = { ...process.env };
+    try {
+        process.env.SPA_STATE = 'SC';
+        delete process.env.CI;
+        expect(() => spaOptionsFromEnv()).toThrow('not allowed locally');
+        process.env.CI = 'true';
+        expect(spaOptionsFromEnv()).toMatchObject({ state: 'SC' });
+        process.env.SPA_STATE = 'CO';
+        expect(() => spaOptionsFromEnv()).toThrow('not allowed on CI');
+    } finally {
+        process.env = original;
+    }
 });

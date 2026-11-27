@@ -38,12 +38,14 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     await expect(page.getByText('Package submitted')).toBeVisible();
     await records.markSubmitted(spaId);
 
-    const spaLink = await findPackageOnDashboard(page, spaId);
-    // A click can land while the search table is still re-rendering and not navigate, so retry the click until the details page opens.
+    // A click can land while the search table is still re-rendering, or OneMAC can show "Page not found" and drop the
+    // search box. Each attempt searches again from Home, so a broken route does not leave the retry clicking a missing link.
     await expect(async () => {
+        const spaLink = await findPackageOnDashboard(page, spaId);
         await spaLink.click();
         await expect(page).toHaveURL(new RegExp(`/details/Medicaid%20SPA/${spaId}$`), { timeout: 10_000 });
-    }).toPass({ timeout: 90_000, intervals: [5_000] });
+        await expect(page.getByText(/Sorry, we couldn.t find that page/)).toHaveCount(0);
+    }).toPass({ timeout: 240_000, intervals: [5_000] });
 
     const packageDetails = page.locator('#package_details');
     const detailValue = (label: string) => packageDetails

@@ -1,0 +1,128 @@
+name: Run suite (reusable)
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: Command that runs the suite or suites
+        type: string
+        required: true
+      state:
+        description: CI SPA state for this run (SPA_STATE)
+        type: string
+        required: true
+      artifact:
+        description: Name used for the uploaded report artifact
+        type: string
+        required: true
+      lane:
+        description: Optional SUITE_LANE value such as 1/2
+        type: string
+        default: ''
+      post-slack:
+        description: Post the Slack summary from inside this run
+        type: boolean
+        default: false
+      start-delay:
+        description: Seconds to wait before starting, so parallel lanes do not log in at the same instant
+        type: number
+        default: 0
+      runner:
+        type: string
+        default: windows-latest
+      timeout-minutes:
+        type: number
+        default: 240
+jobs:
+  run:
+    name: ${{ inputs.artifact }} (${{ inputs.state }})
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    environment: live-smart
+    permissions:
+      contents: write
+    # One run per state at a time. A second run for the same state waits instead of reusing its SPA IDs.
+    concurrency:
+      group: smart-state-${{ inputs.state }}
+      cancel-in-progress: false
+    env:
+      SPA_STATE: ${{ inputs.state }}
+      BROWSER: chromium
+      HEADLESS: '1'
+      SUITE_LANE: ${{ inputs.lane }}
+      SLACK_WEBHOOK_URL: ${{ inputs.post-slack && secrets.SLACK_WEBHOOK_URL || '' }}
+      ONEMAC_USERNAME: ${{ secrets.ONEMAC_USERNAME }}
+      ONEMAC_PASSWORD: ${{ secrets.ONEMAC_PASSWORD }}
+      SF_INTAKE_USERNAME: ${{ secrets.SF_INTAKE_USERNAME }}
+      SF_INTAKE_PASSWORD: ${{ secrets.SF_INTAKE_PASSWORD }}
+      SF_INTAKE_TOTP_SECRET: ${{ secrets.SF_INTAKE_TOTP_SECRET }}
+      SF_CPOC_USERNAME: ${{ secrets.SF_CPOC_USERNAME }}
+      SF_CPOC_PASSWORD: ${{ secrets.SF_CPOC_PASSWORD }}
+      SF_CPOC_TOTP_SECRET: ${{ secrets.SF_CPOC_TOTP_SECRET }}
+      SF_SRT_USERNAME: ${{ secrets.SF_SRT_USERNAME }}
+      SF_SRT_PASSWORD: ${{ secrets.SF_SRT_PASSWORD }}
+      SF_SRT_TOTP_SECRET: ${{ secrets.SF_SRT_TOTP_SECRET }}
+      SF_SRT_SME_USERNAME: ${{ secrets.SF_SRT_SME_USERNAME }}
+      SF_SRT_SME_PASSWORD: ${{ secrets.SF_SRT_SME_PASSWORD }}
+      SF_SRT_SME_TOTP_SECRET: ${{ secrets.SF_SRT_SME_TOTP_SECRET }}
+      SF_DIVDIR_USERNAME: ${{ secrets.SF_DIVDIR_USERNAME }}
+      SF_DIVDIR_PASSWORD: ${{ secrets.SF_DIVDIR_PASSWORD }}
+      SF_DIVDIR_TOTP_SECRET: ${{ secrets.SF_DIVDIR_TOTP_SECRET }}
+      SF_GROUPDIR_USERNAME: ${{ secrets.SF_GROUPDIR_USERNAME }}
+      SF_GROUPDIR_PASSWORD: ${{ secrets.SF_GROUPDIR_PASSWORD }}
+      SF_GROUPDIR_TOTP_SECRET: ${{ secrets.SF_GROUPDIR_TOTP_SECRET }}
+      SF_SUPERUSR_USERNAME: ${{ secrets.SF_SUPERUSR_USERNAME }}
+      SF_SUPERUSR_PASSWORD: ${{ secrets.SF_SUPERUSR_PASSWORD }}
+      SF_SUPERUSR_TOTP_SECRET: ${{ secrets.SF_SUPERUSR_TOTP_SECRET }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Restore SPA state from ci-state
+      uses: actions/checkout@v4
+      with:
+        ref: ci-state
+        path: playwright/.records
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Chromium
+      run: npx playwright install chromium
+    - name: Stagger start
+      if: ${{ inputs.start-delay > 0 }}
+      shell: bash
+      run: sleep ${{ inputs.start-delay }}
+    - name: Run suite
+      run: ${{ inputs.command }}
+    # Runs even after a failure: a failed run may already have reserved SPA IDs that must not be reused.
+    - name: Save SPA state to ci-state
+      if: ${{ !cancelled() }}
+      shell: bash
+      working-directory: playwright/.records
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        # Lock and temp files are never state. The last line removes the old latest.json, which nothing writes or reads now.
+        printf 'latest.json\n*.lock\n*.tmp\n' >> .git/info/exclude
+        git rm -r --cached -q --ignore-unmatch -- '*/latest.json'
+        git add -A
+        if git diff --cached --quiet; then echo "No state changes"; exit 0; fi
+        git commit -m "Update CI SPA state (${{ inputs.artifact }}, run ${{ github.run_id }})"
+        for attempt in 1 2 3 4 5; do
+          git push origin HEAD:ci-state && exit 0
+          git pull --rebase origin ci-state
+        done
+        exit 1
+    - name: Collect report files
+      if: ${{ !cancelled() }}
+      shell: bash
+      run: |
+        mkdir -p report-bundle
+        cp -r playwright-report report-bundle/ 2>/dev/null || true
+        cp test-results/suite-results.json report-bundle/ 2>/dev/null || true
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: ${{ inputs.artifact }}
+        path: report-bundle/
+        retention-days: 30
+        if-no-files-found: warn
