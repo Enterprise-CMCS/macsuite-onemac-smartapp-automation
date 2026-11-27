@@ -46,6 +46,7 @@ jobs:
       cancel-in-progress: false
     env:
       SPA_STATE: ${{ inputs.state }}
+      TZ: America/Chicago
       BROWSER: chromium
       HEADLESS: '1'
       SUITE_LANE: ${{ inputs.lane }}
