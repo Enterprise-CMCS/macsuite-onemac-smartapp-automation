@@ -1,7 +1,8 @@
-import { expect, Page } from '@playwright/test';
+import { errors, expect, Page, Response } from '@playwright/test';
 import { ciStates, localStates } from '../config/states';
 
 export const spaStates = [...new Set([...localStates, ...ciStates, 'FL'])] as const;
+const validationTries = 3;
 export const duplicateSpaMessage = 'According to our records, this SPA ID already exists. Please check the SPA ID and try entering it again.';
 
 export type SpaOptions = {
@@ -85,20 +86,33 @@ export async function chooseSpaId(page: Page, options: SpaOptions, reserve?: () 
             ? await reserve()
             : formatSpaId(options.state, options.year, options.startSequence + attempt);
         lastCandidate = spaId;
-        const [response] = await Promise.all([
-            page.waitForResponse((candidate) => {
-                const request = candidate.request();
-                if (request.method() !== 'POST' || !new URL(candidate.url()).pathname.endsWith('/itemExists')) {
-                    return false;
-                }
-                try {
-                    return request.postDataJSON()?.id === spaId;
-                } catch {
-                    return false;
-                }
-            }, { timeout: options.validationTimeout }),
-            input.fill(spaId),
-        ]);
+        // The validation service can be slow. If no answer arrives, clear and retype the ID so the page asks again.
+        const validationAnswer = (candidate: Response) => {
+            const request = candidate.request();
+            if (request.method() !== 'POST' || !new URL(candidate.url()).pathname.endsWith('/itemExists')) {
+                return false;
+            }
+            try {
+                return request.postDataJSON()?.id === spaId;
+            } catch {
+                return false;
+            }
+        };
+        let response: Response | undefined;
+        for (let tryNumber = 0; tryNumber < validationTries && !response; tryNumber++) {
+            if (tryNumber > 0) await input.fill('');
+            try {
+                [response] = await Promise.all([
+                    page.waitForResponse(validationAnswer, { timeout: options.validationTimeout }),
+                    input.fill(spaId),
+                ]);
+            } catch (error) {
+                if (!(error instanceof errors.TimeoutError)) throw error;
+            }
+        }
+        if (!response) {
+            throw new Error(`SPA ID validation for ${spaId} did not answer after ${validationTries} tries of ${options.validationTimeout} ms.`);
+        }
 
         if (!response.ok()) {
             throw new Error(`SPA ID validation failed for ${spaId}: HTTP ${response.status()}`);

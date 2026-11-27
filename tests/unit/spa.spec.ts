@@ -118,14 +118,16 @@ for (const scenario of ['http-error', 'invalid-response', 'missing-validation'] 
     test(`fails without incrementing on ${scenario}`, async ({ page }) => {
         let requests = 0;
         await page.route('**/itemExists', async (route) => {
-            requests++;
+            // The page also validates the cleared (empty) field, so count only the candidate ID.
+            if (route.request().postDataJSON()?.id === 'CA-26-0036') requests++;
             if (scenario === 'http-error') await route.fulfill({ status: 503 });
             else if (scenario === 'invalid-response') await route.fulfill({ json: {} });
             else await route.abort();
         });
         await spaForm(page);
         await expect(chooseSpaId(page, { ...options, validationTimeout: 500 })).rejects.toThrow();
-        expect(requests).toBe(1);
+        // A validation call that never answers is retried by retyping the ID, then fails with the same ID still in the field.
+        expect(requests).toBe(scenario === 'missing-validation' ? 3 : 1);
         await expect(page.getByRole('textbox')).toHaveValue('CA-26-0036');
     });
 }
