@@ -6,6 +6,30 @@ const curlConfigFile = 'test-results/slack-curl-config.txt';
 const BROWSER_LABELS = { chromium: 'Chrome', msedge: 'Edge', firefox: 'Firefox' };
 const STATUS_LABELS = { expected: 'passed', unexpected: 'failed', flaky: 'flaky', skipped: 'skipped' };
 const MAX_FAILURES_LISTED = 15;
+const DETAIL_MAX_LENGTH = 150;
+const ANSI_PATTERN = /\u001b\[[0-9;]*m/g;
+
+// Returns the first step (deepest first) that carries an error, so the summary names the action that failed.
+function findErrorStep(steps = []) {
+    for (const step of steps) {
+        const nested = findErrorStep(step.steps);
+        if (nested) return nested;
+        if (step.error) return step;
+    }
+    return undefined;
+}
+
+// Returns "Step: <title> → <first line of the error>" for the last failed attempt, or undefined if there is none.
+function failureDetail(test) {
+    const result = [...(test.results ?? [])].reverse().find((r) => r.status !== 'passed' && r.status !== 'skipped');
+    if (!result) return undefined;
+    const step = findErrorStep(result.steps);
+    const message = step?.error?.message ?? result.error?.message ?? '';
+    const firstLine = message.replace(ANSI_PATTERN, '').split('\n').map((line) => line.trim()).find(Boolean);
+    const text = [step?.title && `Step: ${step.title}`, firstLine].filter(Boolean).join(' → ');
+    if (!text) return undefined;
+    return text.length > DETAIL_MAX_LENGTH ? `${text.slice(0, DETAIL_MAX_LENGTH - 1)}…` : text;
+}
 
 // Collects each test's final status from a Playwright JSON suite tree, tagged with its browser project.
 function collectTests(suite, parentTitles = [], tests = []) {
@@ -17,6 +41,7 @@ function collectTests(suite, parentTitles = [], tests = []) {
                 name: [...titles, spec.title].join(' › '),
                 browser: test.projectName ?? 'unknown',
                 status: STATUS_LABELS[test.status] ?? test.status,
+                detail: test.status === 'unexpected' ? failureDetail(test) : undefined,
             });
         }
     }
@@ -66,9 +91,10 @@ function buildMessage({ title, suiteCount, suiteNameFor, tests }) {
 
     const failed = tests.filter((test) => test.status === 'failed');
     if (failed.length) {
-        const failedLines = failed
-            .slice(0, MAX_FAILURES_LISTED)
-            .map((test) => `${INDENT}• ${test.name} (${BROWSER_LABELS[test.browser] ?? test.browser})`);
+        const failedLines = failed.slice(0, MAX_FAILURES_LISTED).flatMap((test) => [
+            `${INDENT}• ${test.name} (${BROWSER_LABELS[test.browser] ?? test.browser})`,
+            ...(test.detail ? [`${INDENT}${INDENT}${test.detail}`] : []),
+        ]);
         if (failed.length > MAX_FAILURES_LISTED) {
             failedLines.push(`${INDENT}…and ${failed.length - MAX_FAILURES_LISTED} more`);
         }

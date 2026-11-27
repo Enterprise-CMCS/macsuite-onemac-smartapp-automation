@@ -31,8 +31,8 @@ on:
         default: windows-latest
       suite-limit:
         description: Run only the first N suites (0 runs all). Use for a short check.
-        type: number
-        default: 0
+        type: string
+        default: '0'
       timeout-minutes:
         type: number
         default: 240

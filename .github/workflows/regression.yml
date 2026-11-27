@@ -5,8 +5,8 @@ on:
     inputs:
       suite-limit:
         description: Run only the first N suites (0 runs all). Use 2 for a short lane check.
-        type: number
-        default: 0
+        type: string
+        default: '0'
 jobs:
   lanes:
     permissions:
