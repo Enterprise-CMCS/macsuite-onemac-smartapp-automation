@@ -1,0 +1,45 @@
+name: Full regression
+# Runs every Med SPA suite in two parallel lanes, each on its own CI state, then posts one Slack summary.
+on:
+  workflow_dispatch:
+jobs:
+  lanes:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: lane-1, lane: '1/2', state: SC, delay: 0 }
+          # Lane 2 starts later so both lanes do not log in as the same users in the same second.
+          - { name: lane-2, lane: '2/2', state: PR, delay: 40 }
+    uses: ./.github/workflows/reusable-suite.yml
+    secrets: inherit
+    with:
+      command: node tests/med-spa-suites/run-all.mjs
+      state: ${{ matrix.state }}
+      lane: ${{ matrix.lane }}
+      artifact: ${{ matrix.name }}
+      start-delay: ${{ matrix.delay }}
+      timeout-minutes: 360
+  summary:
+    needs: lanes
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: lane-*
+        path: lanes
+    - name: Post one Slack summary
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        RUN_STATUS: ${{ needs.lanes.result == 'success' && 'passed' || 'failed' }}
+      run: node scripts/ci/post-regression-summary.mjs lanes

@@ -409,18 +409,22 @@ test('an interrupted reservation is never reused or handed off', async () => {
         expect(await readFile(store.file, 'utf8')).toBe(before);
     });
 
-    test('SMART target is the most recent submission across states, not the per-state latest', async () => {
+    test('SMART target is the newest submission for SPA_STATE and never another state', async () => {
         const ca = createSpaRecordStore(environment, seed, directory);
         const caId = await ca.reserve();
         await ca.markSubmitted(caId);
         const va = createSpaRecordStore(environment, { state: 'VA', year: '26', startSequence: 1 }, directory);
         const vaId = await va.reserve();
         await va.markSubmitted(vaId);
-        expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: vaId, state: 'VA', year: '26' });
+        expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: caId, state: 'CA', year: '26' });
+        expect(await selectSpaTarget(environment, undefined, { ...seed, state: 'VA' }, directory)).toMatchObject({ spaId: vaId, state: 'VA' });
         const caLaterId = await ca.reserve();
         await ca.markSubmitted(caLaterId);
+        await ca.markPendingFirstClock(caLaterId);
+        // Intake clears the state's latestSubmitted, but the newest submission is still the SMART target.
         expect(await selectSpaTarget(environment, undefined, seed, directory)).toMatchObject({ spaId: caLaterId, state: 'CA' });
         expect(await selectSpaTarget(environment, caId, seed, directory)).toMatchObject({ spaId: caId, state: 'CA' });
+        await expect(selectSpaTarget(environment, undefined, { ...seed, state: 'MD' }, directory)).rejects.toThrow('No confirmed SPA submission');
     });
 
     test('current SPA summary fails clearly without creating a missing store', async () => {

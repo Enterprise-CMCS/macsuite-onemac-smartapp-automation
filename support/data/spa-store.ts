@@ -82,10 +82,6 @@ type SequenceData = {
 };
 
 export const defaultRecordsDirectory = path.resolve(__dirname, '../../playwright/.records');
-const latestFileName = 'latest.json';
-
-// Pointer to the most recent OneMAC submission across all states for one environment.
-type LatestSubmission = { spaId: string; state: string; year: string; submittedAt: string };
 
 export function environmentFolder(directory: string, environmentUrl: string): string {
     return path.join(directory, createHash('sha256').update(new URL(environmentUrl).origin).digest('hex'));
@@ -259,18 +255,6 @@ export function createSpaRecordStore(
         }
     }
 
-    async function writeLatest(submission: LatestSubmission): Promise<void> {
-        await mkdir(folder, { recursive: true, mode: 0o700 });
-        const target = path.join(folder, latestFileName);
-        const temporary = `${target}.${randomUUID()}.tmp`;
-        try {
-            await writeFile(temporary, `${JSON.stringify(submission, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
-            await rename(temporary, target);
-        } finally {
-            await rm(temporary, { force: true });
-        }
-    }
-
     return {
         file,
         reserve: () => update((data) => {
@@ -284,7 +268,7 @@ export function createSpaRecordStore(
             return spaId;
         }),
         markSubmitted: async (spaId: string) => {
-            const submittedAt = await update((data) => {
+            await update((data) => {
                 const record = findRecord(data, spaId);
                 if (!record) throw new Error(`Cannot confirm an unreserved SPA ID: ${spaId}`);
                 if (record.onemacStatus !== 'reserved') return null;
@@ -294,10 +278,7 @@ export function createSpaRecordStore(
                 record.smartStatus = 'intake_needed';
                 record.smartStatusAt = record.submittedAt;
                 data.latestSubmittedSpaId = spaId;
-                return record.submittedAt;
             });
-            // Only a fresh submission moves the global pointer; repeat calls leave it unchanged.
-            if (submittedAt) await writeLatest({ spaId, state, year: options.year, submittedAt });
         },
         markPendingFirstClock: (spaId: string) => update((data) => {
             const record = findRecord(data, spaId);
@@ -431,6 +412,13 @@ export function createSpaRecordStore(
             if (!record) throw new Error(`No confirmed SPA submission for ${environment}, ${state}-${options.year}. Run OneMAC creation first.`);
             return { ...record, environment, state, year: options.year };
         },
+        // The newest SPA submitted from OneMAC in this state. Unlike latestSubmitted it stays set after intake moves the SPA on.
+        newestSubmitted: async () => {
+            const data = await read();
+            const record = [...data.records].reverse().find((candidate) => candidate.onemacStatus !== 'reserved');
+            if (!record) throw new Error(`No confirmed SPA submission for ${environment}, ${state}-${options.year}. Run OneMAC creation first.`);
+            return { ...record, environment, state, year: options.year };
+        },
         // The newest SPA intake has moved to Pending - First Clock (OneMAC Under Review), ready for SRT and CPOC.
         latestPendingFirstClock: () => latestInSmartStatus('pending_first_clock'),
         // The Pending - First Clock parent and its splits, parent first. Pass a role to skip SPAs that role already finished.
@@ -470,7 +458,7 @@ export function createSpaRecordStore(
     };
 }
 
-// Resolves the SPA SMART should use: SPA_ID when set, otherwise the most recent OneMAC submission in any state.
+// Resolves the SPA SMART should use: SPA_ID when set, otherwise the newest OneMAC submission for SPA_STATE.
 export async function selectSpaTarget(
     environmentUrl: string,
     overrideSpaId: string | undefined,
@@ -481,24 +469,11 @@ export async function selectSpaTarget(
         const record = await createSpaRecordStore(environmentUrl, envOptions, directory).find(overrideSpaId);
         return { spaId: record.spaId, state: record.state, year: record.year };
     }
-    const pointer = path.join(environmentFolder(directory, environmentUrl), latestFileName);
-    let stored: Partial<LatestSubmission>;
-    try {
-        stored = JSON.parse(await readFile(pointer, 'utf8')) as Partial<LatestSubmission>;
-    } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-            throw new Error(`No confirmed SPA submission for ${new URL(environmentUrl).origin}. Run OneMAC creation first.`);
-        }
-        throw error;
-    }
-    if (typeof stored.spaId !== 'string' || typeof stored.state !== 'string' || typeof stored.year !== 'string') {
-        throw new Error(`Invalid latest SPA pointer: ${pointer}. Refusing to use it.`);
-    }
-    const record = await createSpaRecordStore(environmentUrl, { state: stored.state, year: stored.year, startSequence: 1 }, directory).find(stored.spaId);
+    const record = await createSpaRecordStore(environmentUrl, envOptions, directory).newestSubmitted();
     return { spaId: record.spaId, state: record.state, year: record.year };
 }
 
-// Store for the state and year of the most recent OneMAC submission, so SMART lookups match the target.
+// Store for SPA_STATE and year, once that state has a confirmed submission, so SMART lookups match the target.
 export async function currentSpaStore(
     environmentUrl: string,
     envOptions: Pick<SpaOptions, 'state' | 'year' | 'startSequence'>,

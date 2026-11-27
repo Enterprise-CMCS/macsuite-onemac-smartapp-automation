@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { assertSpaStateAllowed } from './support/data/spa';
+
+// Fails before any browser opens or login runs. Suite scripts set SPA_STATE per run.
+if (process.env.SPA_STATE?.trim()) assertSpaStateAllowed(process.env.SPA_STATE);
 
 /**
  * See https://playwright.dev/docs/test-configuration.

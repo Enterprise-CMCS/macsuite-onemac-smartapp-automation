@@ -14,6 +14,9 @@ const keyFor = (name) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(
 
 const BROWSERS = ['chromium', 'msedge', 'firefox'];
 
+// npx is a .cmd file on Windows, which Node can only start through a shell.
+const shell = process.platform === 'win32';
+
 // BROWSER has no default. Every step runs on this one Playwright project, so the suite never runs all three browsers.
 function requiredBrowser() {
     const browser = process.env.BROWSER?.trim();
@@ -84,6 +87,7 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
                 ['playwright', 'test', `--config=${step.config}`, step.file, `--project=${browser}`, ...args],
                 {
                     stdio: 'inherit',
+                    shell,
                     // Playwright clears the blob folder on every run unless told not to, which would drop earlier steps.
                     env: {
                         ...process.env,
@@ -133,7 +137,7 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
         const merge = spawnSync(
             'npx',
             ['playwright', 'merge-reports', '--config=playwright.merge.config.ts', '--reporter=json', dir],
-            { stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: file } },
+            { stdio: 'inherit', shell, env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: file } },
         );
         if (merge.status === 0 && existsSync(file)) {
             parts.push({ name, file });
@@ -148,7 +152,7 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
     const htmlMerge = spawnSync(
         'npx',
         ['playwright', 'merge-reports', '--config=playwright.merge.config.ts', '--reporter=html', blobDir],
-        { stdio: 'inherit', env: { ...process.env, PLAYWRIGHT_HTML_TITLE: title } },
+        { stdio: 'inherit', shell, env: { ...process.env, PLAYWRIGHT_HTML_TITLE: title } },
     );
     if (htmlMerge.status !== 0) {
         console.error('\nCould not merge the step reports into playwright-report/.');

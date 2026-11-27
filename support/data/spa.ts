@@ -42,17 +42,22 @@ export function formatSplitSpaId(parentSpaId: string, identifier: string): strin
     return `${parentSpaId}-${identifier}`;
 }
 
+// GitHub Actions sets CI=true. Each environment may only use its own states so local and CI stores never share SPA IDs.
+export function assertSpaStateAllowed(state: string): void {
+    const onCi = process.env.CI === 'true';
+    const allowed: readonly string[] = onCi ? ciStates : localStates;
+    if (!allowed.includes(state.trim().toUpperCase())) {
+        throw new Error(`SPA_STATE ${state} is not allowed ${onCi ? 'on CI' : 'locally'}. Use one of: ${allowed.join(', ')}.`);
+    }
+}
+
 // No default state: a missing SPA_STATE fails before any browser step.
 export function spaOptionsFromEnv(): SpaOptions {
     if (!process.env.SPA_STATE?.trim()) {
         throw new Error(`Set SPA_STATE to the state for this run (one of: ${spaStates.join(', ')}), e.g. SPA_STATE=CA.`);
     }
     // GitHub Actions sets CI=true. Each environment may only use its own states so local and CI stores never share SPA IDs.
-    const onCi = process.env.CI === 'true';
-    const allowed: readonly string[] = onCi ? ciStates : localStates;
-    if (!allowed.includes(process.env.SPA_STATE.trim().toUpperCase())) {
-        throw new Error(`SPA_STATE ${process.env.SPA_STATE} is not allowed ${onCi ? 'on CI' : 'locally'}. Use one of: ${allowed.join(', ')}.`);
-    }
+    assertSpaStateAllowed(process.env.SPA_STATE);
     const options = {
         state: process.env.SPA_STATE,
         year: String(new Date().getFullYear()).slice(-2),
