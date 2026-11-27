@@ -4,11 +4,18 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync,
 import { sendSlackSummary } from './lib/slack.mjs';
 
 // Each browser gets its own SPA state, so the parallel runs don't write to the same store.
-const BROWSERS = [
-    { project: 'chromium', label: 'Chrome', state: 'CA' },
-    { project: 'msedge', label: 'Edge', state: 'VA' },
-    { project: 'firefox', label: 'Firefox', state: 'CO' },
-];
+// CI uses its own states (see support/config/states.ts) so it never shares SPA IDs with local runs.
+const BROWSERS = process.env.CI === 'true'
+    ? [
+        { project: 'chromium', label: 'Chrome', state: 'SC' },
+        { project: 'msedge', label: 'Edge', state: 'PR' },
+        { project: 'firefox', label: 'Firefox', state: 'MT' },
+    ]
+    : [
+        { project: 'chromium', label: 'Chrome', state: 'CA' },
+        { project: 'msedge', label: 'Edge', state: 'VA' },
+        { project: 'firefox', label: 'Firefox', state: 'CO' },
+    ];
 
 const [specFile, suiteName] = process.argv.slice(2);
 if (!specFile || !suiteName) {

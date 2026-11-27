@@ -50,7 +50,7 @@ test('Intake completes each OneMAC Medicaid SPA in the workflow and moves it to 
         });
 
         await test.step('Upload intake attachment in Files Uploaded in SMART', async () => {
-            await spaRecord.attachments.upload(path.resolve(__dirname, '../../../support/documents/intake-attachment.png'));
+            await spaRecord.attachments.upload(path.resolve(__dirname, '../../../../support/documents/intake-attachment.png'));
             const files = spaRecord.attachments.uploadedFiles.getByRole('grid', { name: 'Files Uploaded in SMART', exact: true });
             await expect(files.getByRole('link', { name: 'intake-attachment.png', exact: true }).first()).toBeVisible();
         });

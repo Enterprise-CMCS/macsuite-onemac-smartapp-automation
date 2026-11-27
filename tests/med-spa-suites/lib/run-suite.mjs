@@ -76,7 +76,9 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
             rmSync(junitFile, { force: true });
             const blobsBefore = blobCount();
             // The browser comes only from BROWSER. Any --project in a step's args is dropped so it can't override the choice.
-            const args = step.args.filter((arg) => !arg.startsWith('--project='));
+            // HEADLESS=1 drops the --headed that the suite definitions add, so the run stays in the background.
+            const headless = process.env.HEADLESS === '1';
+            const args = step.args.filter((arg) => !arg.startsWith('--project=') && !(headless && arg === '--headed'));
             const result = spawnSync(
                 'npx',
                 ['playwright', 'test', `--config=${step.config}`, step.file, `--project=${browser}`, ...args],
@@ -91,7 +93,8 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
                         PLAYWRIGHT_HTML_OPEN: 'never',
                         SUITE_BLOB: '1',
                         PWTEST_BLOB_DO_NOT_REMOVE: '1',
-                        PLAYWRIGHT_BLOB_OUTPUT_NAME: `${key}-step-${index + 1}.zip`,
+                        // Zero-padded so the merged report lists steps in order (step-02 sorts before step-10).
+                        PLAYWRIGHT_BLOB_OUTPUT_NAME: `${key}-step-${String(index + 1).padStart(2, '0')}.zip`,
                     },
                 },
             );

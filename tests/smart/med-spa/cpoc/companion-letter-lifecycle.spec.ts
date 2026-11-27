@@ -77,7 +77,7 @@ test('CPOC works the companion letter: sets milestones, opens and closes issues,
         await history.expectLatestIssueChange(third, 'Closed Date', { newValue: closedDate, user: /^CPOC/ });
     });
     await test.step('Upload a file to the companion letter', async () => {
-        await letter.uploadFile(path.resolve(__dirname, '../../../support/documents/upload/Cover Letter.png'));
+        await letter.uploadFile(path.resolve(__dirname, '../../../../support/documents/upload/Cover Letter.png'));
     });
     await test.step('Add a Monitoring Action Note', async () => {
         await letter.addNote(`Automation note ${closedDate}`);

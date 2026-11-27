@@ -62,6 +62,7 @@ test('requires SPA_STATE with no default', () => {
         expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
         process.env.SPA_STATE = '  ';
         expect(() => spaOptionsFromEnv()).toThrow('Set SPA_STATE');
+        delete process.env.CI;
         process.env.SPA_STATE = 'CO';
         expect(spaOptionsFromEnv()).toMatchObject({ state: 'CO' });
     } finally {
@@ -72,6 +73,7 @@ test('requires SPA_STATE with no default', () => {
 test('reads configurable state, starting sequence, and attempt limit with the current year', () => {
     const original = { ...process.env };
     try {
+        delete process.env.CI;
         process.env.SPA_STATE = 'md';
         process.env.SPA_YEAR = '00';
         process.env.SPA_START_SEQUENCE = '50';
@@ -476,4 +478,18 @@ test('an interrupted reservation is never reused or handed off', async () => {
         await expect(createCompanionLetterStore(environment, directory).record({ ...letter, recordId: 'a1iSL000006other' }))
             .rejects.toThrow('already has companion letter');
     });
+});
+test('keeps local and CI states separate', () => {
+    const original = { ...process.env };
+    try {
+        process.env.SPA_STATE = 'SC';
+        delete process.env.CI;
+        expect(() => spaOptionsFromEnv()).toThrow('not allowed locally');
+        process.env.CI = 'true';
+        expect(spaOptionsFromEnv()).toMatchObject({ state: 'SC' });
+        process.env.SPA_STATE = 'CO';
+        expect(() => spaOptionsFromEnv()).toThrow('not allowed on CI');
+    } finally {
+        process.env = original;
+    }
 });

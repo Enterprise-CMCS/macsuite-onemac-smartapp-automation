@@ -78,12 +78,26 @@ export class SmartReview {
         await expect(this.page.getByRole('dialog')).toHaveCount(0);
     }
 
-    // Opens the RAI record from the RAI link in the RAI Details card at the bottom of the SPA record. No-op if already on it.
+    // Opens the RAI record from the RAI field in the Request for Additional Information section of the SPA record. No-op if already on it.
     async openRaiRecord(spaId: string): Promise<void> {
         if (this.page.url().includes('SMART_Request_for_Additional_Information__c')) return;
         const raiLink = this.page.getByRole('link', { name: `${spaId}-RAI`, exact: true });
-        // The RAI Details card is below the fold and its rows render only once the card is in view, so scroll to the card first.
-        await this.page.getByRole('heading', { name: 'RAI Details', exact: true }).scrollIntoViewIfNeeded();
+        // The Request for Additional Information section is on the Details tab. Its label also exists hidden on other tabs, so only the visible one is used.
+        const detailsTab = this.page.getByRole('tab', { name: 'Details', exact: true });
+        const raiSection = this.page.getByText('Request for Additional Information', { exact: true }).filter({ visible: true }).first();
+        const openDetails = async () => {
+            await detailsTab.click();
+            await expect(detailsTab).toHaveAttribute('aria-selected', 'true');
+        };
+        await openDetails();
+        await raiSection.scrollIntoViewIfNeeded();
+        const shown = await raiLink.waitFor({ state: 'visible', timeout: 15_000 }).then(() => true, () => false);
+        if (!shown) {
+            // The record page can render this section late, so reload once, reopen Details, and scroll back to it.
+            await this.page.reload();
+            await openDetails();
+            await raiSection.scrollIntoViewIfNeeded();
+        }
         await expect(raiLink).toBeVisible();
         await raiLink.scrollIntoViewIfNeeded();
         await raiLink.click();
@@ -91,7 +105,7 @@ export class SmartReview {
     }
 
     // Saves RAI Issued Date on the RAI record, reads RAI Request Expires, then returns to the SPA through its ID link.
-    // The RAI link sits in the RAI Details card on the SPA record page, which loads after Prepare RAI Questions.
+    // The RAI field sits in the Request for Additional Information section on the SPA record page, which loads after Prepare RAI Questions.
     async setRaiIssuedDate(date: string, spaId: string): Promise<{ issuedDate: string; expiresDate: string }> {
         await this.openRaiRecord(spaId);
         await this.page.getByRole('button', { name: 'Edit RAI Issued Date', exact: true }).click();

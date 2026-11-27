@@ -47,6 +47,12 @@ export function spaOptionsFromEnv(): SpaOptions {
     if (!process.env.SPA_STATE?.trim()) {
         throw new Error(`Set SPA_STATE to the state for this run (one of: ${spaStates.join(', ')}), e.g. SPA_STATE=CA.`);
     }
+    // GitHub Actions sets CI=true. Each environment may only use its own states so local and CI stores never share SPA IDs.
+    const onCi = process.env.CI === 'true';
+    const allowed: readonly string[] = onCi ? ciStates : localStates;
+    if (!allowed.includes(process.env.SPA_STATE.trim().toUpperCase())) {
+        throw new Error(`SPA_STATE ${process.env.SPA_STATE} is not allowed ${onCi ? 'on CI' : 'locally'}. Use one of: ${allowed.join(', ')}.`);
+    }
     const options = {
         state: process.env.SPA_STATE,
         year: String(new Date().getFullYear()).slice(-2),
