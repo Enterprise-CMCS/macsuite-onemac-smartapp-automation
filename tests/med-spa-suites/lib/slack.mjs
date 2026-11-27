@@ -68,10 +68,10 @@ const groupBy = (items, keyOf) => {
 };
 
 // One suite per run in CI. The test view can be a multi-file report, so each file is its own block.
-function buildMessage({ title, suiteCount, suiteNameFor, tests }) {
+function buildMessage({ suiteCount, suiteNameFor, tests }) {
     const sections = [];
     const allPassed = tests.every((test) => test.status === 'passed' || test.status === 'skipped');
-    sections.push(`${allPassed ? '✅' : '❌'} *Total ${title}: ${suiteCount} suite${suiteCount === 1 ? '' : 's'}*`);
+    sections.push(`${allPassed ? '✅' : '❌'} *Total Med SPA suites ran: ${suiteCount} suite${suiteCount === 1 ? '' : 's'}*`);
 
     for (const [suite, suiteTests] of groupBy(tests, (test) => suiteNameFor(test.suite))) {
         const counts = countStatuses(suiteTests);
@@ -111,7 +111,7 @@ function buildMessage({ title, suiteCount, suiteNameFor, tests }) {
 
 // Sends one plain-text message to the Slack workflow webhook. The URL is kept in a temporary curl config and removed afterward.
 // suiteNames lists the suites in run order. jsonFile is the Playwright JSON report for the run.
-export function sendSlackSummary({ title, suiteNames, jsonFile }) {
+export function sendSlackSummary({ suiteNames, jsonFile }) {
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
     if (!webhookUrl) {
         console.warn('\nSLACK_WEBHOOK_URL is not set. Skipping the Slack summary.');
@@ -125,9 +125,11 @@ export function sendSlackSummary({ title, suiteNames, jsonFile }) {
     const tests = (report.suites ?? []).flatMap((suite) =>
         collectTests(suite).map((test) => ({ ...test, suite: suite.title || 'Tests' })),
     );
-    // A single CI suite covers the whole report, so its name labels every test.
-    const suiteNameFor = (fileTitle) => (suiteNames.length === 1 ? suiteNames[0] : fileTitle);
-    const text = buildMessage({ title, suiteCount: suiteNames.length, suiteNameFor, tests });
+    // A single CI suite covers the whole report, so its name labels every test. With several suites, each step file is
+    // prefixed with its suite name (see combineReports), so tests group under that suite instead of one line per step.
+    const suiteNameFor = (fileTitle) =>
+        suiteNames.length === 1 ? suiteNames[0] : (suiteNames.find((name) => fileTitle.startsWith(`${name}/`)) ?? fileTitle);
+    const text = buildMessage({ suiteCount: suiteNames.length, suiteNameFor, tests });
     try {
         writeFileSync(curlConfigFile, `url = "${webhookUrl}"\nheader = "Content-Type: application/json"\n`, { mode: 0o600 });
         const send = spawnSync(
