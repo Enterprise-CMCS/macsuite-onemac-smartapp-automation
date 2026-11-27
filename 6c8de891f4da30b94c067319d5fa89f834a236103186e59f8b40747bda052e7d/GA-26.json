@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "environment": "https://mako-dev.cms.gov",
+  "state": "GA",
+  "year": "26",
+  "lastReserved": 1,
+  "lastSuffix": 1,
+  "latestSubmittedSpaId": null,
+  "records": [
+    {
+      "spaId": "GA-26-0001-QA01",
+      "onemacStatus": "approved",
+      "smartStatus": "approved",
+      "reservedAt": "2026-01-01T00:00:00.000Z",
+      "submittedAt": "2026-01-01T00:00:00.000Z",
+      "underReviewAt": "2026-01-01T00:00:00.000Z",
+      "smartStatusAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}
