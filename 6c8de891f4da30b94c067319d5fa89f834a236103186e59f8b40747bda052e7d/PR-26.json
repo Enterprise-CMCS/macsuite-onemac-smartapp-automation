@@ -4,8 +4,8 @@
   "state": "PR",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 6,
-  "latestSubmittedSpaId": null,
+  "lastSuffix": 10,
+  "latestSubmittedSpaId": "PR-26-0001-QA10",
   "records": [
     {
       "spaId": "PR-26-0001-QA01",
@@ -92,9 +92,91 @@
         "proposedEffectiveDate": "December 27, 2026",
         "additionalInformation": "this is a test"
       },
+      "underReviewAt": "2026-11-27T23:30:44.146Z",
       "onemacStatus": "under_review",
-      "smartStatus": "pending_first_clock",
-      "underReviewAt": "2026-11-27T23:30:44.146Z"
+      "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "PR-26-0001-QA07",
+      "reservedAt": "2026-11-27T23:38:14.860Z",
+      "submittedAt": "2026-11-27T23:38:25.064Z",
+      "smartStatusAt": "2026-11-27T23:43:47.870Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "underReviewAt": "2026-11-27T23:40:27.191Z",
+      "reviewsCompleted": {
+        "srt": "2026-11-27T23:42:55.008Z",
+        "cpoc": "2026-11-27T23:43:20.534Z"
+      },
+      "reviewRecommendations": {
+        "srt": "disapprove",
+        "cpoc": "disapprove"
+      },
+      "onemacStatus": "under_review",
+      "smartStatus": "disapproved"
+    },
+    {
+      "spaId": "PR-26-0001-QA08",
+      "reservedAt": "2026-11-27T23:43:57.616Z",
+      "submittedAt": "2026-11-27T23:44:11.063Z",
+      "smartStatusAt": "2026-11-27T23:49:56.577Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "reviewsCompleted": {
+        "srt": "2026-11-27T23:47:22.663Z",
+        "cpoc": "2026-11-27T23:47:54.513Z"
+      },
+      "reviewRecommendations": {
+        "srt": "approve",
+        "cpoc": "approve"
+      },
+      "onemacStatus": "approved",
+      "smartStatus": "approved"
+    },
+    {
+      "spaId": "PR-26-0001-QA09",
+      "reservedAt": "2026-11-27T23:50:40.156Z",
+      "submittedAt": "2026-11-27T23:50:50.415Z",
+      "smartStatusAt": "2026-11-27T23:56:50.413Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "raiDetails": {
+        "issuedDate": "11/27/2026",
+        "expiresDate": "2/26/2027"
+      },
+      "formalRaiResponseDate": "11/27/2026",
+      "underReviewAt": "2026-11-27T23:56:09.081Z",
+      "raiReviewsCompleted": {
+        "srt": "2026-11-27T23:56:59.109Z"
+      },
+      "onemacStatus": "under_review",
+      "smartStatus": "pending_second_clock"
+    },
+    {
+      "spaId": "PR-26-0001-QA10",
+      "reservedAt": "2026-11-27T23:57:16.062Z",
+      "submittedAt": "2026-11-27T23:57:25.586Z",
+      "smartStatusAt": "2026-11-27T23:57:25.586Z",
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      }
     }
   ]
 }

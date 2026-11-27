@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "environment": "https://mako-dev.cms.gov",
+  "records": [
+    {
+      "spaId": "PR-26-0001-QA08",
+      "letterName": "PR-26-0001-QA08-CL",
+      "recordId": "a1iSL000006ryyfYAA",
+      "createdByRole": "group_director",
+      "createdAt": "2026-11-27T23:48:19.187Z"
+    }
+  ]
+}
