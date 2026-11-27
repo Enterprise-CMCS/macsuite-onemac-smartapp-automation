@@ -21,7 +21,7 @@ on:
           - run-suite-split-intake-approval
           - run-suite-split-rai-approval
       state:
-        description: CI SPA state. SC and PR are used by the regression lanes.
+        description: CI SPA state. OH and PR are used by the regression lanes.
         type: choice
         default: MT
         options:

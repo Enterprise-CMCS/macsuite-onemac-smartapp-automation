@@ -46,10 +46,17 @@ export class OneMacDashboard {
         const shown = observed as T;
 
         // The row link can ignore a click while the table is still re-rendering, so retry until the route changes.
+        // If the click lands on "Page not found", search the dashboard again before the next click.
+        const notFound = this.page.getByText(/Sorry, we couldn.t find that page/);
+        let link = spaLink;
         await expect(async () => {
-            await spaLink.click();
+            await link.click();
+            if (await notFound.isVisible()) {
+                link = await findPackageOnDashboard(this.page, spaId);
+                throw new Error('OneMAC showed "Page not found" after the row click; searched the dashboard again');
+            }
             await expect(this.page).toHaveURL(new RegExp(`/details/Medicaid%20SPA/${spaId}$`), { timeout: 10_000 });
-        }).toPass({ timeout: 60_000, intervals: [3_000] });
+        }).toPass({ timeout: 180_000, intervals: [3_000] });
         await expect(this.page.locator('dt', { hasText: new RegExp(`^${shown}$`) })).toBeVisible();
         // The details page keeps loading sections after the status appears, so let it settle before the screenshot.
         await this.page.waitForLoadState('networkidle');

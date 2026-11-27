@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: lane-1, lane: '1/2', state: SC, delay: 0 }
+          - { name: lane-1, lane: '1/2', state: OH, delay: 0 }
           # Lane 2 starts later so both lanes do not log in as the same users in the same second.
           - { name: lane-2, lane: '2/2', state: PR, delay: 40 }
     uses: ./.github/workflows/reusable-suite.yml
