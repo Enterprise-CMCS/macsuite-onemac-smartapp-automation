@@ -4,8 +4,8 @@
   "state": "SC",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 4,
-  "latestSubmittedSpaId": "SC-26-0001-QA04",
+  "lastSuffix": 5,
+  "latestSubmittedSpaId": "SC-26-0001-QA05",
   "records": [
     {
       "spaId": "SC-26-0001-QA01",
@@ -43,6 +43,20 @@
       "reservedAt": "2026-11-27T22:02:29.116Z",
       "submittedAt": "2026-11-27T22:02:45.212Z",
       "smartStatusAt": "2026-11-27T22:02:45.212Z",
+      "details": {
+        "state": "South Carolina",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed"
+    },
+    {
+      "spaId": "SC-26-0001-QA05",
+      "reservedAt": "2026-11-27T22:18:51.484Z",
+      "submittedAt": "2026-11-27T22:19:09.454Z",
+      "smartStatusAt": "2026-11-27T22:19:09.454Z",
       "onemacStatus": "submitted",
       "smartStatus": "intake_needed",
       "details": {
