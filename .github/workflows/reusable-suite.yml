@@ -33,10 +33,6 @@ on:
       runner:
         type: string
         default: windows-latest
-      suite-limit:
-        description: Run only the first N suites (0 runs all). Use for a short check.
-        type: string
-        default: '0'
       timeout-minutes:
         type: number
         default: 240
@@ -57,7 +53,6 @@ jobs:
       BROWSER: ${{ inputs.browser }}
       HEADLESS: '1'
       SUITE_LANE: ${{ inputs.lane }}
-      SUITE_LIMIT: ${{ inputs.suite-limit }}
       SLACK_WEBHOOK_URL: ${{ inputs.post-slack && secrets.SLACK_WEBHOOK_URL || '' }}
       ONEMAC_USERNAME: ${{ secrets.ONEMAC_USERNAME }}
       ONEMAC_PASSWORD: ${{ secrets.ONEMAC_PASSWORD }}
