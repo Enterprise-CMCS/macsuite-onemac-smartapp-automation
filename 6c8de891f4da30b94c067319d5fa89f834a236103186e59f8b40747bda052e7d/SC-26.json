@@ -4,17 +4,25 @@
   "state": "SC",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 1,
-  "latestSubmittedSpaId": null,
+  "lastSuffix": 2,
+  "latestSubmittedSpaId": "SC-26-0001-QA02",
   "records": [
     {
       "spaId": "SC-26-0001-QA01",
-      "onemacStatus": "approved",
-      "smartStatus": "approved",
       "reservedAt": "2026-01-01T00:00:00.000Z",
       "submittedAt": "2026-01-01T00:00:00.000Z",
       "underReviewAt": "2026-01-01T00:00:00.000Z",
-      "smartStatusAt": "2026-01-01T00:00:00.000Z"
+      "smartStatusAt": "2026-01-01T00:00:00.000Z",
+      "onemacStatus": "approved",
+      "smartStatus": "approved"
+    },
+    {
+      "spaId": "SC-26-0001-QA02",
+      "reservedAt": "2026-11-27T14:24:27.510Z",
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed",
+      "submittedAt": "2026-11-27T14:24:41.775Z",
+      "smartStatusAt": "2026-11-27T14:24:41.775Z"
     }
   ]
 }
