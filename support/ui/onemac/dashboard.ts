@@ -5,15 +5,19 @@ import { expect, Locator, Page, TestInfo } from '@playwright/test';
 export async function findPackageOnDashboard(page: Page, spaId: string): Promise<Locator> {
     const searchBox = page.getByRole('textbox', { name: 'Search by Package ID, CPOC Name, or Submitter Name' });
     const spaLink = page.getByTestId('os-table').getByRole('link', { name: spaId, exact: true });
+    const notFound = page.getByText(/Sorry, we couldn.t find that page/);
     await expect(async () => {
         await page.getByRole('link', { name: 'Home', exact: true }).first().click();
         await page.getByTestId('Dashboard-d').click();
         await expect(searchBox).toBeVisible({ timeout: 15_000 });
-        // New packages can lag behind in search, so retry the search until the row appears.
         await searchBox.fill(spaId);
         await searchBox.press('Enter');
-        await expect(spaLink).toBeVisible({ timeout: 10_000 });
-        await expect(page.getByText(/Sorry, we couldn.t find that page/)).toHaveCount(0);
+        await expect(spaLink.or(notFound)).toBeVisible({ timeout: 10_000 });
+        if (await notFound.isVisible()) {
+            // A search on a newly created package can break the page. A refresh recovers it, as a manual refresh does.
+            await page.reload();
+            throw new Error('OneMAC showed "Page not found" after searching; reloaded the dashboard');
+        }
     }).toPass({ timeout: 180_000, intervals: [5_000] });
     return spaLink;
 }

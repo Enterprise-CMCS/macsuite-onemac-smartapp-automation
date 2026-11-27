@@ -4,7 +4,7 @@ import { SmartRecordSearch } from '../../support/ui/smart/record-search';
 import { SpaRecord } from '../../support/ui/smart/spa-record';
 import { SmartReview } from '../../support/ui/smart/sections/review';
 import { SmartNotes } from '../../support/ui/smart/sections/notes';
-import { futureDate } from '../../support/data/future-date';
+import { addDays, futureDate } from '../../support/data/future-date';
 import path from 'node:path';
 import { onemacAttachments } from '../../support/data/onemac-attachments';
 
@@ -51,6 +51,11 @@ test('intake attachment waits for completion and clicks modal Done before checki
     await expect(page.locator('.modal-container')).toBeHidden();
     await expect(page.locator('body')).not.toHaveAttribute('data-wrong-done', 'clicked');
     await expect(page.getByLabel('Other upload')).toHaveValue('');
+});
+
+test('days offsets cross month boundaries', () => {
+    expect(addDays(30, new Date(2026, 10, 27))).toEqual(new Date(2026, 11, 27));
+    expect(addDays(-7, new Date(2027, 2, 3))).toEqual(new Date(2027, 1, 24));
 });
 
 test('future dates preserve the day where possible and clamp at month end', () => {
