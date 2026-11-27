@@ -4,8 +4,8 @@
   "state": "PR",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 3,
-  "latestSubmittedSpaId": null,
+  "lastSuffix": 4,
+  "latestSubmittedSpaId": "PR-26-0001-QA04",
   "records": [
     {
       "spaId": "PR-26-0001-QA01",
@@ -43,6 +43,20 @@
       },
       "onemacStatus": "submitted",
       "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "PR-26-0001-QA04",
+      "reservedAt": "2026-11-27T22:46:48.128Z",
+      "submittedAt": "2026-11-27T22:46:58.027Z",
+      "smartStatusAt": "2026-11-27T22:46:58.027Z",
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      }
     }
   ]
 }
