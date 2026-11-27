@@ -4,7 +4,7 @@
   "state": "OH",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 6,
+  "lastSuffix": 7,
   "latestSubmittedSpaId": null,
   "records": [
     {
@@ -83,9 +83,24 @@
         "proposedEffectiveDate": "November 20, 2026",
         "additionalInformation": "this is a test"
       },
+      "underReviewAt": "2026-11-27T20:05:37.372Z",
+      "onemacStatus": "under_review",
+      "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "OH-26-0001-QA07",
+      "reservedAt": "2026-11-27T20:21:24.288Z",
+      "submittedAt": "2026-11-27T20:21:38.805Z",
+      "smartStatusAt": "2026-11-27T20:22:54.367Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
       "onemacStatus": "under_review",
       "smartStatus": "pending_first_clock",
-      "underReviewAt": "2026-11-27T20:05:37.372Z"
+      "underReviewAt": "2026-11-27T20:23:26.557Z"
     }
   ]
 }
