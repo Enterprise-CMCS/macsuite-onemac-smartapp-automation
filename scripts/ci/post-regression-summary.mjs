@@ -37,9 +37,11 @@ mkdirSync('test-results', { recursive: true });
 const jsonFile = 'test-results/regression-results.json';
 writeFileSync(jsonFile, JSON.stringify(combined));
 
-const suiteNames = (await loadSuites()).map((suite) => suite.name);
+// Mirrors the SUITE_LIMIT selection in run-all.mjs so the message lists only the suites that ran.
+const limit = Number(process.env.SUITE_LIMIT?.trim() || 0);
+const allSuites = await loadSuites();
+const suiteNames = (limit > 0 ? allSuites.slice(0, limit) : allSuites).map((suite) => suite.name);
 sendSlackSummary({
-    title: 'Full regression: Med SPA suites',
     runStatus: process.env.RUN_STATUS === 'passed' ? 'passed' : 'failed',
     suiteNames,
     jsonFile,

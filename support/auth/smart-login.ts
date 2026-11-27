@@ -8,6 +8,10 @@ export type SmartCredentials = {
     totpSecret: string;
 };
 
+const MAX_VERIFICATION_ATTEMPTS = 3;
+const VERIFICATION_RETRY_DELAY_MS = 5_000;
+const CODE_REJECTED = /Invalid or expired verification code/i;
+
 export async function loginAsUser(page: Page, creds: SmartCredentials) {
     await page.goto(appUrls.smartLogin);
     await page.fill('#username', creds.username);
@@ -16,8 +20,15 @@ export async function loginAsUser(page: Page, creds: SmartCredentials) {
     await page.click('#Login');
 
     const codeInput = page.locator('input[name="code"], #tc');
+    const appLauncher = page.getByRole('button', { name: 'App Launcher' });
     await codeInput.waitFor();
-    await codeInput.fill(await getTotpCode(creds.totpSecret));
-    await page.click('button[type="submit"], #save');
-    await expect(page.getByRole('button', { name: 'App Launcher' })).toBeVisible();
+
+    for (let attempt = 1; attempt <= MAX_VERIFICATION_ATTEMPTS; attempt++) {
+        await codeInput.fill(await getTotpCode(creds.totpSecret));
+        await page.click('button[type="submit"], #save');
+        await appLauncher.or(page.getByText(CODE_REJECTED)).first().waitFor();
+        if (await appLauncher.isVisible()) return;
+        if (attempt < MAX_VERIFICATION_ATTEMPTS) await page.waitForTimeout(VERIFICATION_RETRY_DELAY_MS);
+    }
+    await expect(appLauncher, 'Salesforce rejected every verification code').toBeVisible();
 }

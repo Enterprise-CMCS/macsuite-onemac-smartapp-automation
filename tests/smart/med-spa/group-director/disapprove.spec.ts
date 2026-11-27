@@ -21,7 +21,7 @@ test('Disapproves SPA: Group Director disapproves and the SPA moves to Disapprov
         await spaRecord.adjudication.open();
     });
     await test.step('Record Disapprove on the Adjudication row', async () => {
-        await spaRecord.adjudication.recordDecision('Adjudication', 'Disapprove');
+        await spaRecord.adjudication.recordDecision('Adjudication', 'Disapprove', { blankStatus: true });
     });
     await test.step('Verify the Group Director is recorded as Acted By User', async () => {
         await spaRecord.adjudication.expectActedBy('Adjudication', groupDirectorName);

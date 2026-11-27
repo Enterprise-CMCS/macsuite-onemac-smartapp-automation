@@ -99,7 +99,6 @@ if (htmlMerge.status !== 0) {
 const mergeFailed = jsonMerge.status !== 0 || htmlMerge.status !== 0;
 const runStatus = failedBrowsers.length || mergeFailed ? 'failed' : 'passed';
 sendSlackSummary({
-        title: suiteName,
         runStatus,
         suiteNames: [suiteName],
         projects: BROWSERS.map((b) => b.project),

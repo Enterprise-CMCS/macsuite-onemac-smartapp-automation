@@ -26,9 +26,17 @@ on:
         description: Seconds to wait before starting, so parallel lanes do not log in at the same instant
         type: number
         default: 0
+      browser:
+        description: Playwright project for this run (chromium, msedge, or firefox)
+        type: string
+        default: chromium
       runner:
         type: string
         default: windows-latest
+      suite-limit:
+        description: Run only the first N suites (0 runs all). Use for a short check.
+        type: string
+        default: '0'
       timeout-minutes:
         type: number
         default: 240
@@ -46,9 +54,10 @@ jobs:
       cancel-in-progress: false
     env:
       SPA_STATE: ${{ inputs.state }}
-      BROWSER: chromium
+      BROWSER: ${{ inputs.browser }}
       HEADLESS: '1'
       SUITE_LANE: ${{ inputs.lane }}
+      SUITE_LIMIT: ${{ inputs.suite-limit }}
       SLACK_WEBHOOK_URL: ${{ inputs.post-slack && secrets.SLACK_WEBHOOK_URL || '' }}
       ONEMAC_USERNAME: ${{ secrets.ONEMAC_USERNAME }}
       ONEMAC_PASSWORD: ${{ secrets.ONEMAC_PASSWORD }}

@@ -1,7 +1,15 @@
 name: Full regression
 # Runs every Med SPA suite in two parallel lanes, each on its own CI state, then posts one Slack summary.
 on:
+  schedule:
+    # 7 PM Central in standard time (01:00 UTC). Shifts to 8 PM during daylight saving time.
+    - cron: '0 1 * * *'
   workflow_dispatch:
+    inputs:
+      suite-limit:
+        description: Run only the first N suites (0 runs all). Use 2 for a short lane check.
+        type: string
+        default: '0'
 jobs:
   lanes:
     permissions:
@@ -10,9 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: lane-1, lane: '1/2', state: SC, delay: 0 }
+          - { name: lane-1, lane: '1/2', state: OH, delay: 0, browser: chromium }
           # Lane 2 starts later so both lanes do not log in as the same users in the same second.
-          - { name: lane-2, lane: '2/2', state: PR, delay: 40 }
+          - { name: lane-2, lane: '2/2', state: PR, delay: 40, browser: msedge }
     uses: ./.github/workflows/reusable-suite.yml
     secrets: inherit
     with:
@@ -21,6 +29,8 @@ jobs:
       lane: ${{ matrix.lane }}
       artifact: ${{ matrix.name }}
       start-delay: ${{ matrix.delay }}
+      browser: ${{ matrix.browser }}
+      suite-limit: ${{ inputs.suite-limit }}
       timeout-minutes: 360
   summary:
     needs: lanes

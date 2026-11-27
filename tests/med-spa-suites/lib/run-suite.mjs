@@ -162,7 +162,7 @@ export function runSuites(suites, { title = 'Playwright suite' } = {}) {
         writeFileSync(jsonFile, JSON.stringify(combineReports(parts)));
     }
     const runStatus = failedSuites.length || mergeFailed || htmlMerge.status !== 0 ? 'failed' : 'passed';
-    sendSlackSummary({ title, runStatus, suiteNames: keys.map((k) => k.name), jsonFile });
+    sendSlackSummary({ runStatus, suiteNames: keys.map((k) => k.name), jsonFile });
 
     if (failedSuites.length) {
         console.error(`\nFailed suites: ${failedSuites.join(', ')}`);
