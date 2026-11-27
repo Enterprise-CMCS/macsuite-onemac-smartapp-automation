@@ -10,9 +10,9 @@ export function futureDate(monthsOut: number, today = new Date()): Date {
     return target;
 }
 
-export function daysAgo(days: number, today = new Date()): Date {
+export function addDays(days: number, today = new Date()): Date {
     const target = new Date(today);
-    target.setDate(target.getDate() - days);
+    target.setDate(target.getDate() + days);
     return target;
 }
 
