@@ -10,19 +10,22 @@ export function futureDate(monthsOut: number, today = new Date()): Date {
     return target;
 }
 
-// Opens a date-picker calendar, navigates forward the right number of
-// months, and clicks the day matching "monthsOut" months from today.
-export async function pickFutureDate(page: Page, monthsOut: number) {
-    const today = new Date();
-    const target = futureDate(monthsOut, today);
-    // number of calendar months between today's picker view and the target
-    const monthsToAdvance =
+export function daysAgo(days: number, today = new Date()): Date {
+    const target = new Date(today);
+    target.setDate(target.getDate() - days);
+    return target;
+}
+
+// Opens a date-picker calendar, moves to the target's month, and clicks the target day.
+export async function pickDate(page: Page, target: Date, today = new Date()) {
+    // number of calendar months between today's picker view and the target; negative means earlier
+    const monthsToMove =
         (target.getFullYear() - today.getFullYear()) * 12 +
         (target.getMonth() - today.getMonth());
 
-    const nextMonthButton = page.getByRole('button', { name: 'Go to next month' });
-    for (let i = 0; i < monthsToAdvance; i++) {
-        await nextMonthButton.click();
+    const monthButton = page.getByRole('button', { name: monthsToMove < 0 ? 'Go to previous month' : 'Go to next month' });
+    for (let i = 0; i < Math.abs(monthsToMove); i++) {
+        await monthButton.click();
     }
 
     const targetDay = String(target.getDate());

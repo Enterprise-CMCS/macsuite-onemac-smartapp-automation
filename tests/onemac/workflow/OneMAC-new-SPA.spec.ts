@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import path from 'node:path';
-import { pickFutureDate } from '../../../support/data/future-date';
+import { daysAgo, pickDate } from '../../../support/data/future-date';
 import { test } from '../../../support/fixtures/onemac.fixture';
 import { chooseSpaId, spaOptionsFromEnv } from '../../../support/data/spa';
 import { createSpaRecordStore } from '../../../support/data/spa-store';
@@ -22,7 +22,7 @@ test('OneMAC creates a new Medicaid SPA', async ({ page }, testInfo) => {
     const spaId = await chooseSpaId(page, spaOptions, records.reserve);
     console.log(`Using SPA ID: ${spaId}`);
     await page.getByTestId('proposedEffectiveDate-datepicker').click();
-    await pickFutureDate(page, 3); // always 3 months from today, regardless of current month
+    await pickDate(page, daysAgo(7)); // 7 days in the past
 
     for (const { testId, fileName } of onemacAttachments) {
         await page.getByTestId(`${testId}-upload`).setInputFiles(uploadFile(fileName));
