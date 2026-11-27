@@ -2,6 +2,11 @@ name: Full regression
 # Runs every Med SPA suite in two parallel lanes, each on its own CI state, then posts one Slack summary.
 on:
   workflow_dispatch:
+    inputs:
+      suite-limit:
+        description: Run only the first N suites (0 runs all). Use 2 for a short lane check.
+        type: number
+        default: 0
 jobs:
   lanes:
     permissions:
@@ -21,6 +26,7 @@ jobs:
       lane: ${{ matrix.lane }}
       artifact: ${{ matrix.name }}
       start-delay: ${{ matrix.delay }}
+      suite-limit: ${{ inputs.suite-limit }}
       timeout-minutes: 360
   summary:
     needs: lanes
