@@ -26,6 +26,10 @@ on:
         description: Seconds to wait before starting, so parallel lanes do not log in at the same instant
         type: number
         default: 0
+      browser:
+        description: Playwright project for this run (chromium, msedge, or firefox)
+        type: string
+        default: chromium
       runner:
         type: string
         default: windows-latest
@@ -50,7 +54,7 @@ jobs:
       cancel-in-progress: false
     env:
       SPA_STATE: ${{ inputs.state }}
-      BROWSER: chromium
+      BROWSER: ${{ inputs.browser }}
       HEADLESS: '1'
       SUITE_LANE: ${{ inputs.lane }}
       SUITE_LIMIT: ${{ inputs.suite-limit }}

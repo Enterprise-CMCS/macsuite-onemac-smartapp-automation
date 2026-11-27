@@ -15,9 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: lane-1, lane: '1/2', state: OH, delay: 0 }
+          - { name: lane-1, lane: '1/2', state: OH, delay: 0, browser: chromium }
           # Lane 2 starts later so both lanes do not log in as the same users in the same second.
-          - { name: lane-2, lane: '2/2', state: PR, delay: 40 }
+          - { name: lane-2, lane: '2/2', state: PR, delay: 40, browser: msedge }
     uses: ./.github/workflows/reusable-suite.yml
     secrets: inherit
     with:
@@ -26,6 +26,7 @@ jobs:
       lane: ${{ matrix.lane }}
       artifact: ${{ matrix.name }}
       start-delay: ${{ matrix.delay }}
+      browser: ${{ matrix.browser }}
       suite-limit: ${{ inputs.suite-limit }}
       timeout-minutes: 360
   summary:
