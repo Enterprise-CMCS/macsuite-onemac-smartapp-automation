@@ -32,13 +32,12 @@ function failureDetail(test) {
 }
 
 // Collects each test's final status from a Playwright JSON suite tree, tagged with its browser project.
-function collectTests(suite, parentTitles = [], tests = []) {
-    const titles = suite.title ? [...parentTitles, suite.title] : parentTitles;
-    for (const child of suite.suites ?? []) collectTests(child, titles, tests);
+function collectTests(suite, tests = []) {
+    for (const child of suite.suites ?? []) collectTests(child, tests);
     for (const spec of suite.specs ?? []) {
         for (const test of spec.tests ?? []) {
             tests.push({
-                name: [...titles, spec.title].join(' › '),
+                name: spec.title,
                 browser: test.projectName ?? 'unknown',
                 status: STATUS_LABELS[test.status] ?? test.status,
                 detail: test.status === 'unexpected' ? failureDetail(test) : undefined,
