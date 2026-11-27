@@ -19,10 +19,13 @@ export class SmartAdjudication {
     }
 
     // rowNumber selects that row by its position in the grid, for example 2 for the pending row after a return.
-    async recordDecision(section: DecisionSection, decision: 'Concur' | 'Approve' | 'Disapprove' | 'Return to Review Team', options: { rowNumber?: number } = {}): Promise<void> {
+    // blankStatus selects the first row with no decision yet, for grids where an earlier return leaves a row behind.
+    async recordDecision(section: DecisionSection, decision: 'Concur' | 'Approve' | 'Disapprove' | 'Return to Review Team', options: { rowNumber?: number; blankStatus?: boolean } = {}): Promise<void> {
         const grid = this.sectionFor(section);
+        const rowCheckbox = options.blankStatus
+            ? grid.getByRole('row').filter({ hasNotText: /Return to Review|Approve|Disapprove|Concur/ }).getByRole('checkbox', { name: /Select Item/ }).first()
+            : grid.getByRole('checkbox', { name: new RegExp(`Select Item ${options.rowNumber ?? 1}\\b`) });
         // The row checkbox's label intercepts pointer clicks, so the input is checked with force.
-        const rowCheckbox = grid.getByRole('checkbox', { name: new RegExp(`Select Item ${options.rowNumber ?? 1}\\b`) });
         await rowCheckbox.check({ force: true });
         await expect(rowCheckbox).toBeChecked();
         await grid.getByRole('button', { name: 'Record Decision', exact: true }).click();
