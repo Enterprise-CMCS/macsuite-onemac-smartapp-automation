@@ -4,7 +4,7 @@
   "state": "OH",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 12,
+  "lastSuffix": 18,
   "latestSubmittedSpaId": null,
   "records": [
     {
@@ -203,6 +203,131 @@
       },
       "onemacStatus": "approved",
       "smartStatus": "approved"
+    },
+    {
+      "spaId": "OH-26-0001-QA13",
+      "reservedAt": "2026-11-27T23:37:44.872Z",
+      "submittedAt": "2026-11-27T23:37:57.609Z",
+      "smartStatusAt": "2026-11-27T23:43:01.448Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "reviewsCompleted": {
+        "srt": "2026-11-27T23:41:27.307Z",
+        "cpoc": "2026-11-27T23:42:02.987Z"
+      },
+      "reviewRecommendations": {
+        "srt": "approve",
+        "cpoc": "approve"
+      },
+      "onemacStatus": "approved",
+      "smartStatus": "approved"
+    },
+    {
+      "spaId": "OH-26-0001-QA14",
+      "reservedAt": "2026-11-27T23:44:00.354Z",
+      "submittedAt": "2026-11-27T23:44:10.391Z",
+      "smartStatusAt": "2026-11-27T23:48:35.591Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "underReviewAt": "2026-11-27T23:46:03.314Z",
+      "reviewsCompleted": {
+        "srt": "2026-11-27T23:48:09.425Z",
+        "cpoc": "2026-11-27T23:48:35.591Z"
+      },
+      "reviewRecommendations": {
+        "srt": "disapprove",
+        "cpoc": "disapprove"
+      },
+      "onemacStatus": "under_review",
+      "smartStatus": "pending_disapproval"
+    },
+    {
+      "spaId": "OH-26-0001-QA15",
+      "reservedAt": "2026-11-27T23:49:07.057Z",
+      "submittedAt": "2026-11-27T23:49:15.636Z",
+      "smartStatusAt": "2026-11-27T23:52:50.967Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "underReviewAt": "2026-11-27T23:51:12.502Z",
+      "reviewsCompleted": {
+        "srt": "2026-11-27T23:51:44.367Z",
+        "cpoc": "2026-11-27T23:52:14.586Z"
+      },
+      "reviewRecommendations": {
+        "srt": "disapprove",
+        "cpoc": "disapprove"
+      },
+      "onemacStatus": "under_review",
+      "smartStatus": "disapproved"
+    },
+    {
+      "spaId": "OH-26-0001-QA16",
+      "reservedAt": "2026-11-27T23:52:59.147Z",
+      "submittedAt": "2026-11-27T23:53:08.230Z",
+      "smartStatusAt": "2026-11-27T23:59:01.937Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "raiDetails": {
+        "issuedDate": "11/27/2026",
+        "expiresDate": "2/26/2027"
+      },
+      "formalRaiResponseDate": "11/27/2026",
+      "raiReviewsCompleted": {
+        "srt": "2026-11-27T23:57:35.063Z",
+        "cpoc": "2026-11-27T23:58:04.859Z"
+      },
+      "onemacStatus": "approved",
+      "smartStatus": "approved"
+    },
+    {
+      "spaId": "OH-26-0001-QA17",
+      "reservedAt": "2026-11-27T23:59:45.977Z",
+      "submittedAt": "2026-11-27T23:59:54.163Z",
+      "smartStatusAt": "2026-11-28T00:00:57.280Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "OH-26-0001-QA18",
+      "reservedAt": "2026-11-28T00:02:08.787Z",
+      "submittedAt": "2026-11-28T00:02:18.021Z",
+      "smartStatusAt": "2026-11-28T00:05:21.895Z",
+      "details": {
+        "state": "Ohio",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "raiDetails": {
+        "issuedDate": "11/27/2026",
+        "expiresDate": "2/26/2027"
+      },
+      "formalRaiResponseDate": "11/27/2026",
+      "onemacStatus": "under_review",
+      "smartStatus": "pending_rai",
+      "underReviewAt": "2026-11-28T00:06:22.083Z"
     }
   ]
 }
