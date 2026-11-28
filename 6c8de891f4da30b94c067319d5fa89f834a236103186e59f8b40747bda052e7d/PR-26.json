@@ -4,8 +4,8 @@
   "state": "PR",
   "year": "26",
   "lastReserved": 1,
-  "lastSuffix": 10,
-  "latestSubmittedSpaId": "PR-26-0001-QA10",
+  "lastSuffix": 14,
+  "latestSubmittedSpaId": "PR-26-0001-QA14",
   "records": [
     {
       "spaId": "PR-26-0001-QA01",
@@ -169,6 +169,62 @@
       "reservedAt": "2026-11-27T23:57:16.062Z",
       "submittedAt": "2026-11-27T23:57:25.586Z",
       "smartStatusAt": "2026-11-27T23:57:25.586Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed"
+    },
+    {
+      "spaId": "PR-26-0001-QA11",
+      "reservedAt": "2026-11-28T01:05:26.525Z",
+      "submittedAt": "2026-11-28T01:05:38.004Z",
+      "smartStatusAt": "2026-11-28T01:05:38.004Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "intake_needed"
+    },
+    {
+      "spaId": "PR-26-0001-QA12",
+      "reservedAt": "2026-11-28T01:07:21.220Z",
+      "submittedAt": "2026-11-28T01:07:32.065Z",
+      "smartStatusAt": "2026-11-28T01:08:33.451Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "PR-26-0001-QA13",
+      "reservedAt": "2026-11-28T01:09:45.615Z",
+      "submittedAt": "2026-11-28T01:09:57.667Z",
+      "smartStatusAt": "2026-11-28T01:10:56.845Z",
+      "details": {
+        "state": "Puerto Rico",
+        "initialSubmissionDate": "11/27/2026",
+        "proposedEffectiveDate": "December 27, 2026",
+        "additionalInformation": "this is a test"
+      },
+      "onemacStatus": "submitted",
+      "smartStatus": "pending_first_clock"
+    },
+    {
+      "spaId": "PR-26-0001-QA14",
+      "reservedAt": "2026-11-28T01:12:09.792Z",
+      "submittedAt": "2026-11-28T01:12:20.435Z",
+      "smartStatusAt": "2026-11-28T01:12:20.435Z",
       "onemacStatus": "submitted",
       "smartStatus": "intake_needed",
       "details": {
